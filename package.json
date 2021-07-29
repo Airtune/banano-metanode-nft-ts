@@ -1,0 +1,15 @@
+{
+  "name": "banano-metanode-nft-ts",
+  "version": "1.0.0",
+  "description": "A metanode implementation for the Banano Meta NFT Protocol in Typescript.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Airtune",
+  "license": "MIT",
+  "dependencies": {
+    "nano-ipfs": "git+https://github.com/Airtune/nano-ipfs.git",
+    "node-fetch": "^2.6.1"
+  }
+}

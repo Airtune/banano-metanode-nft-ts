@@ -1,0 +1,10 @@
+{
+  "compilerOptions": {
+    "removeComments": false,
+    "sourceMap": true,
+    "target": "es5",
+    "outDir": "dist",
+    "types": ["node", "mocha", "bs58"]
+  },
+  "include": ["index.ts"]
+}
