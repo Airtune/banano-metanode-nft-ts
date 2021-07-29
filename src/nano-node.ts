@@ -83,7 +83,7 @@ export class NanoNode {
 
     const _prototype: string = Object.prototype.toString.call(accountHistory['history']);
     if (!(_prototype === '[object String]' || _prototype === '[object Array]')) {
-      throw Error(`UnexpectedNanoNodeResponse: accountHistory['history'] not of type object or string. Got: ${_prototype}`);
+      throw Error(`UnexpectedNanoNodeResponse: accountHistory['history'] not of type array or string. Got: ${_prototype}`);
     }
   }
 
