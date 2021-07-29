@@ -39,20 +39,14 @@ export class NanoAccountCrawler implements NanoAccountIterableInterface {
       throw Error('NanoAccountCrawlerError: not initialized. Did you call initialize() before iterating?');
     }
 
-    const maxIterations = 1000;
-    let iterations = 0;
+    const maxRpcIterations = 1000;
+    let rpcIterations = 0;
 
     let history = this.accountHistory['history'];
     let historyIndex = 0;
 
     return {
       next: async () => {
-        // Guard against infinite loops and making too many RPC calls.
-        iterations += 1;
-        if (iterations > maxIterations) {
-          throw Error(`TooManyIterations: Expected to fetch full history from nano node within ${maxIterations} requests.`);
-        }
-
         const block = history[historyIndex];
         const blockHeight = BigInt('' + block['height']);
 
@@ -64,6 +58,11 @@ export class NanoAccountCrawler implements NanoAccountIterableInterface {
         // confirmed block it's probably because the node didn't return the full history.
         // In this case fetch the next segment of the history following the last block.
         if (historyIndex == (history.length - 1) && this.nanoNode.hasMoreHistory(history, this.confirmationHeight)) {
+          // Guard against infinite loops and making too many RPC calls.
+          rpcIterations += 1;
+          if (rpcIterations > maxRpcIterations) {
+            throw Error(`TooManyRpcIterations: Expected to fetch full history from nano node within ${maxRpcIterations} requests.`);
+          }
           const _accountHistory = await this.nanoNode.getHistoryAfterHead(this.account, block['hash']);
           history = _accountHistory['history'];
           historyIndex = 0;
