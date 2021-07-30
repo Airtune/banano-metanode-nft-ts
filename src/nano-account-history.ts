@@ -18,8 +18,15 @@ export class NanoAccountHistory implements NanoAccountIterableInterface {
     // do nothing
   }
 
-  firstBlock() {
-    return this.accountHistory['history'][0];
+  firstBlock(): NanoBlockInterface {
+    const block = this.accountHistory['history'][0];
+    const blockHeight = BigInt('' + block['height']);
+
+    if (blockHeight <= BigInt('0') || blockHeight > this.confirmationHeight) {
+      throw Error(`NotConfirmed: first block in account history not confirmed for account: ${this.account}`);
+    }
+
+    return block;
   }
 
   [Symbol.asyncIterator](): AsyncIterator<NanoBlockInterface> {
