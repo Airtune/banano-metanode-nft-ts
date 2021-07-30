@@ -1,15 +1,19 @@
-import { NanoBlockInterface } from './interfaces/nano-block-interface'
-import { NanoAccountIterableInterface } from './interfaces/nano-account-iterable-interface'
 import { NanoNode } from './nano-node';
+import {
+  INanoAccountHistory,
+  INanoAccountInfo,
+  INanoAccountIterable,
+  INanoBlock
+} from './interfaces/nano-interfaces';
 
 // Iterable that makes requests as required when looping through blocks in an account.
-export class NanoAccountCrawler implements NanoAccountIterableInterface {
+export class NanoAccountCrawler implements INanoAccountIterable {
   public nanoNode: NanoNode;
   public account: string;
   public head: string;
 
-  private accountHistory;
-  private accountInfo;
+  private accountHistory: INanoAccountHistory;
+  private accountInfo: INanoAccountInfo;
   private confirmationHeight: BigInt;
 
   constructor(nanoNode: NanoNode, account: string, head: string) {
@@ -27,12 +31,12 @@ export class NanoAccountCrawler implements NanoAccountIterableInterface {
     this.accountHistory = await historySegmentPromise;
     this.accountInfo    = await accountInfoPromise;
 
-    this.confirmationHeight = BigInt('' + this.accountInfo['confirmation_height']);
+    this.confirmationHeight = BigInt('' + this.accountInfo.confirmation_height);
   }
 
-  firstBlock(): NanoBlockInterface {
-    const block = this.accountHistory['history'][0];
-    const blockHeight = BigInt('' + block['height']);
+  firstBlock(): INanoBlock {
+    const block: INanoBlock = this.accountHistory.history[0];
+    const blockHeight = BigInt('' + block.height);
 
     if (blockHeight <= BigInt('0') || blockHeight > this.confirmationHeight) {
       throw Error(`NotConfirmed: first block in account history not confirmed for account: ${this.account}`);
@@ -41,7 +45,7 @@ export class NanoAccountCrawler implements NanoAccountIterableInterface {
     return block;
   }
 
-  [Symbol.asyncIterator](): AsyncIterator<NanoBlockInterface> {
+  [Symbol.asyncIterator](): AsyncIterator<INanoBlock> {
     if (this.accountHistory === null || this.accountInfo === null || this.confirmationHeight <= BigInt('0')) {
       throw Error('NanoAccountCrawlerError: not initialized. Did you call initialize() before iterating?');
     }
@@ -49,13 +53,13 @@ export class NanoAccountCrawler implements NanoAccountIterableInterface {
     const maxRpcIterations = 1000;
     let rpcIterations = 0;
 
-    let history = this.accountHistory['history'];
+    let history = this.accountHistory.history;
     let historyIndex = 0;
 
     return {
       next: async () => {
-        const block = history[historyIndex];
-        const blockHeight = BigInt('' + block['height']);
+        const block: INanoBlock = history[historyIndex];
+        const blockHeight = BigInt('' + block.height);
 
         if (blockHeight <= BigInt('0')) {
           return { value: undefined, done: true };
@@ -70,8 +74,8 @@ export class NanoAccountCrawler implements NanoAccountIterableInterface {
           if (rpcIterations > maxRpcIterations) {
             throw Error(`TooManyRpcIterations: Expected to fetch full history from nano node within ${maxRpcIterations} requests.`);
           }
-          const _accountHistory = await this.nanoNode.getHistoryAfterHead(this.account, block['hash']);
-          history = _accountHistory['history'];
+          const _accountHistory = await this.nanoNode.getHistoryAfterHead(this.account, block.hash);
+          history = _accountHistory.history;
           historyIndex = 0;
           return { value: block, done: false };
         }
