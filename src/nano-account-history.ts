@@ -38,15 +38,19 @@ export class NanoAccountHistory implements INanoAccountIterable {
       throw Error(`UnconfirmedAccount: confirmationHeight for account is: ${this.confirmationHeight}`);
     }
 
-    let history = this.accountHistory.history;
-    let historyIndex = 0;
+    let history: INanoBlock[] = this.accountHistory.history;
+    let historyIndex: number = 0;
 
     return {
       next: async () => {
+        if (history.length === 0 || historyIndex > history.length) {
+          return { value: undefined, done: true };
+        }
+
         const block: INanoBlock = history[historyIndex];
         const blockHeight = BigInt('' + block.height);
 
-        if (blockHeight <= BigInt('0') || historyIndex >= history.length) {
+        if (blockHeight <= BigInt('0')) {
           return { value: undefined, done: true };
         }
 
