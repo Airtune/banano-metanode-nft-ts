@@ -1,3 +1,8 @@
+import {
+  INanoAccountHistory,
+  INanoAccountInfo
+} from './interfaces/nano-interfaces';
+
 export class NanoNode {
   private nodeApiUrl: string;
   private _fetch: Function;
@@ -7,7 +12,7 @@ export class NanoNode {
     this._fetch = _fetch;
   }
 
-  async getHistoryAfterHead(account: string, head: string): Promise<any> {
+  async getHistoryAfterHead(account: string, head: string): Promise<INanoAccountHistory> {
     const request = {
       action: 'account_history',
       account: account,
@@ -24,7 +29,7 @@ export class NanoNode {
     return response;
   }
 
-  async getAccountInfo(account): Promise<any> {
+  async getAccountInfo(account): Promise<INanoAccountInfo> {
     const request = {
       action: 'account_info',
       account: account
