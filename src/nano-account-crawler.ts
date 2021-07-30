@@ -68,16 +68,20 @@ export class NanoAccountCrawler implements INanoAccountIterable {
         // If it's the last block in the history returned by the nano node but it isn't the latest
         // confirmed block it's probably because the node didn't return the full history.
         // In this case fetch the next segment of the history following the last block.
-        if (historyIndex == (history.length - 1) && this.nanoNode.hasMoreHistory(history, this.confirmationHeight)) {
-          // Guard against infinite loops and making too many RPC calls.
-          rpcIterations += 1;
-          if (rpcIterations > maxRpcIterations) {
-            throw Error(`TooManyRpcIterations: Expected to fetch full history from nano node within ${maxRpcIterations} requests.`);
+        if (historyIndex >= (history.length - 1)) {
+          if (this.nanoNode.hasMoreHistory(history, this.confirmationHeight)) {
+            // Guard against infinite loops and making too many RPC calls.
+            rpcIterations += 1;
+            if (rpcIterations > maxRpcIterations) {
+              throw Error(`TooManyRpcIterations: Expected to fetch full history from nano node within ${maxRpcIterations} requests.`);
+            }
+            const _accountHistory = await this.nanoNode.getHistoryAfterHead(this.account, block.hash);
+            history = _accountHistory.history;
+            historyIndex = 0;
+            return { value: block, done: false };
+          } else {
+            return { value: undefined, done: true };
           }
-          const _accountHistory = await this.nanoNode.getHistoryAfterHead(this.account, block.hash);
-          history = _accountHistory.history;
-          historyIndex = 0;
-          return { value: block, done: false };
         }
 
         historyIndex += 1;
