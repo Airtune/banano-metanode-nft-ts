@@ -1,6 +1,7 @@
 export interface INanoBlock {
   account: string;
   representative: string;
+  previous: string;
   hash: string;
   height: string;
 }
