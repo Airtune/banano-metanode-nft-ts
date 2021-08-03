@@ -8,7 +8,7 @@ const head = 'AC4C7C242703B72E73664D367685107E04C3A5FE91E95EC9147E8A3778BC6437';
 
 describe('NanoNode', () => {
   it('getHistoryAfterHead', async () => {
-    const accountHistory = await bananode.getHistoryAfterHead(account, head);
+    const accountHistory = await bananode.getForwardHistory(account, head, '1');
     expect(accountHistory).to.be.an('object').that.include.all.keys('account', 'history');
     expect(accountHistory.account).to.equal(account);
     expect(accountHistory.history[0].previous).to.equal(head);

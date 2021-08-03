@@ -4,11 +4,12 @@
   "description": "A metanode implementation for the Banano Meta NFT Protocol in Typescript.",
   "main": "index.js",
   "scripts": {
-    "test": "mocha --require ts-node/register ./test/*.spec.ts"
+    "test": "mocha --require ts-node/register ./test/meta-template.spec.ts"
   },
   "author": "Airtune",
   "license": "MIT",
   "dependencies": {
+    "@bananocoin/bananojs": "^2.4.15",
     "nano-ipfs": "git+https://github.com/Airtune/nano-ipfs.git",
     "node-fetch": "^2.6.1"
   },

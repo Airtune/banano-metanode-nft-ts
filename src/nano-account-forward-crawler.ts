@@ -2,30 +2,32 @@ import { NanoNode } from './nano-node';
 import {
   INanoAccountHistory,
   INanoAccountInfo,
-  INanoAccountIterable,
+  INanoAccountForwardIterable,
   INanoBlock
 } from './interfaces/nano-interfaces';
 
 // Iterable that makes requests as required when looping through blocks in an account.
-export class NanoAccountCrawler implements INanoAccountIterable {
-  public nanoNode: NanoNode;
-  public account: string;
-  public head: string;
-
+export class NanoAccountForwardCrawler implements INanoAccountForwardIterable {
+  private nanoNode: NanoNode;
+  private account: string;
+  private head: string;
+  private offset: string;
   private accountHistory: INanoAccountHistory;
   private accountInfo: INanoAccountInfo;
   private confirmationHeight: BigInt;
+  
 
-  constructor(nanoNode: NanoNode, account: string, head: string) {
+  constructor(nanoNode: NanoNode, account: string, head: string, offset: string) {
     this.nanoNode = nanoNode;
     this.account = account;
     this.head = head;
     this.accountHistory = null;
     this.accountInfo = null;
+    this.offset = offset;
   }
 
   async initialize() {
-    const historySegmentPromise = this.nanoNode.getHistoryAfterHead(this.account, this.head);
+    const historySegmentPromise = this.nanoNode.getForwardHistory(this.account, this.head, this.offset);
     const accountInfoPromise    = this.nanoNode.getAccountInfo(this.account);
 
     this.accountHistory = await historySegmentPromise;
@@ -80,8 +82,7 @@ export class NanoAccountCrawler implements INanoAccountIterable {
             if (rpcIterations > maxRpcIterations) {
               throw Error(`TooManyRpcIterations: Expected to fetch full history from nano node within ${maxRpcIterations} requests.`);
             }
-            console.log(`rpcIterations: ${rpcIterations}`);
-            const _accountHistory = await this.nanoNode.getHistoryAfterHead(this.account, block.hash);
+            const _accountHistory = await this.nanoNode.getForwardHistory(this.account, block.hash, this.offset);
             history = _accountHistory.history;
             historyIndex = 0;
           }

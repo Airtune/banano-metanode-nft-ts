@@ -12,16 +12,36 @@ export class NanoNode {
     this._fetch = _fetch;
   }
 
-  async getHistoryAfterHead(account: string, head: string): Promise<INanoAccountHistory> {
+  async getForwardHistory(account: string, head: string, offset: string = "0"): Promise<INanoAccountHistory> {
     const request = {
       action: 'account_history',
       account: account,
       head: head,
       count: -1,
-      offset: "1",
+      offset: offset,
       reverse: "true",
       raw: true
     };
+    const response = await this.jsonRequest(request);
+    this.validateIsAccountHistory(response);
+    this.validateAccount(account, response);
+
+    return response;
+  }
+
+  async getBackwardHistory(account: string, head: string = undefined, account_filter: string[] = undefined): Promise<INanoAccountHistory> {
+    const request: any = {
+      action: 'account_history',
+      account: account,
+      count: -1,
+      raw: true
+    };
+    if (head) {
+      request.head = head;
+    }
+    if (account_filter) {
+      request.account_filter = account_filter;
+    }
     const response = await this.jsonRequest(request);
     this.validateIsAccountHistory(response);
     this.validateAccount(account, response);
