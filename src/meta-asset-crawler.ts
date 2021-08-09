@@ -1,32 +1,44 @@
-import { NanoNode } from './nano-node'
-import { INanoBlock } from './interfaces/nano-interfaces';
-import { NanoAccountBackwardCrawler } from './nano-account-backward-crawler';
-import { NanoAccountForwardCrawler } from './nano-account-forward-crawler';
+import { NanoAccountForwardCrawler } from 'nano-account-crawler/dist/nano-account-forward-crawler'
+import { NanoAccountBackwardCrawler } from 'nano-account-crawler/dist/nano-account-backward-crawler'
+import { NanoNode } from 'nano-account-crawler/dist/nano-node'
+import { INanoBlock } from 'nano-account-crawler/dist/nano-interfaces';
 
 export class MetaAssetCrawler {
   private nanoNode: NanoNode;
   private issuer: string;
-  private assetFirstSendBlockHash: string;
+  private assetFirstSendBlock: INanoBlock;
   private assetRepresentative: string;
-  private firstReceiverAccount: string;
 
-  constructor(nanoNode: NanoNode, issuer: string, assetFirstSendBlockHash: string, assetRepresentative: string, firstReceiverAccount: string) {
+  constructor(nanoNode: NanoNode, issuer: string, assetFirstSendBlock: INanoBlock, assetRepresentative: string) {
     this.nanoNode = nanoNode;
     this.issuer = issuer;
-    this.assetFirstSendBlockHash = assetFirstSendBlockHash;
+    this.assetFirstSendBlock = assetFirstSendBlock;
     this.assetRepresentative = assetRepresentative;
-    this.firstReceiverAccount = firstReceiverAccount;
   }
 
   async crawl(): Promise<INanoBlock[]> {
-    const receiveBlock = await this.findReceiveBlock(this.issuer, this.assetFirstSendBlockHash, this.firstReceiverAccount);
-    if (receiveBlock === undefined) { return []; }
+    let headSender = this.issuer;
+    let headSend = this.assetFirstSendBlock;
+    let headRecipient;
+    const chain = [headSend];
+    
+    while (true) {
+      const receiveBlock = await this.findReceiveBlock(headSender, headSend.hash, headSend.link);
+      if (receiveBlock === undefined) { break; }
+      headRecipient = headSend.account;
+      chain.push(receiveBlock);
 
-    const sendBlock = await this.findSendBlock(this.firstReceiverAccount, receiveBlock.hash, this.assetRepresentative);
-    if (sendBlock === undefined) { return [receiveBlock]; }
+      const sendBlock = await this.findSendBlock(headRecipient, receiveBlock.hash, this.assetRepresentative);
+      if (sendBlock === undefined) { break; }
+      headSend = sendBlock;
+      headSender = headRecipient;
+      chain.push(sendBlock);
+    }
+
+    return chain;
   }
 
-  async findSendBlock(account: string, receiveBlockHash: string, assetRepresentative: string): Promise<(INanoBlock|undefined)> {
+  private async findSendBlock(account: string, receiveBlockHash: string, assetRepresentative: string): Promise<(INanoBlock|undefined)> {
     const nanoForwardIterable = new NanoAccountForwardCrawler(this.nanoNode, account, receiveBlockHash, "1");
     await nanoForwardIterable.initialize();
 
@@ -39,7 +51,7 @@ export class MetaAssetCrawler {
     return undefined;
   }
 
-  async findReceiveBlock(senderAccount: string, sendHash: string, receiverAccount: string): Promise<(INanoBlock|undefined)> {
+  private async findReceiveBlock(senderAccount: string, sendHash: string, receiverAccount: string): Promise<(INanoBlock|undefined)> {
     const nanoBackwardIterable = new NanoAccountBackwardCrawler(this.nanoNode, receiverAccount, undefined, [senderAccount]);
     await nanoBackwardIterable.initialize();
 

@@ -1,22 +1,35 @@
+import * as IpfsHash from 'ipfs-only-hash';
+import { ITemplateJson } from "./interfaces/template-json";
+
 const blockHashPattern: RegExp = new RegExp('^[0-9A-Za-z]{64}$');
-const maxSupplyPattern: RegExp = new RegExp('^[0-9]{1,39}$')
+const maxSupplyPattern: RegExp = new RegExp('^[0-9]{1,39}$');
+const accountPattern: RegExp = new RegExp('(ban|nano|xrp)\_(1|3)[13-9a-km-uw-z]{59}');
 
 export class MetaTemplate {
   private ipfsCid: string;
-  private metadata: any;
+  private rawTemplate: string;
+  private template: ITemplateJson;
   private maxSupply: (BigInt|undefined);
+  private validated: boolean;
 
-  constructor(metadata: any, ipfsCid: string) {
+  constructor(rawTemplate: string, ipfsCid: string) {
     this.ipfsCid = ipfsCid;
-    this.metadata = metadata;
+    this.rawTemplate = rawTemplate;
+    this.validated = false;
+  }
+  
+  initialize() {
+    if (typeof(this.template) !== 'object') {
+      this.template = JSON.parse(this.rawTemplate);
+    }
   }
 
   getIssuer(): string {
-    return this.metadata['issuer'];
+    return this.template.issuer;
   }
 
   getPrevious(): string {
-    return this.metadata['previous'];
+    return this.template.previous;
   }
 
   getIpfsCid(): string {
@@ -24,11 +37,11 @@ export class MetaTemplate {
   }
 
   getArtDataIpfsCid(): (string|undefined) {
-    return this.metadata['art_data_ipfs_cid'];
+    return this.template.art_data_ifps_cid;
   }
 
   hasLimitedSupply(): boolean {
-    return this.metadata.hasOwnProperty('max_supply');
+    return this.template.hasOwnProperty('max_supply');
   }
 
   getMaxSupply(): (BigInt|undefined) {
@@ -36,9 +49,9 @@ export class MetaTemplate {
       return this.maxSupply;
     }
 
-    if (typeof(this.metadata['max_supply']) === 'string' && maxSupplyPattern.test(this.metadata['max_supply'])) {
+    if (typeof(this.template.max_supply) === 'string' && maxSupplyPattern.test(this.template.max_supply)) {
       try {
-        const maxSupply = BigInt(this.metadata['max_supply']);
+        const maxSupply = BigInt(this.template.max_supply);
         this.maxSupply = maxSupply;
         return maxSupply;
       } catch(SyntaxError) {
@@ -49,25 +62,50 @@ export class MetaTemplate {
     return undefined;
   }
 
-  validate() {
-    if (typeof(this.metadata) !== 'object') {
-      throw Error(`InvalidMetadata: Unexpected template metadata. Expected type to be 'object'. Got type: '${typeof(this.metadata)}'`);
+  async initializeAndValidate() {
+    if (this.validated) {
+      return;
     }
 
-    if (this.metadata['command'] !== 'nft_template') {
-      throw Error(`InvalidMetadata: Unexpected command in template metadata. Got: ${this.metadata.command}`);
+    if (typeof(this.rawTemplate) !== 'string') {
+      throw Error(`InvalidTemplate: Unexpected template raw data. Expected type to be 'string'. Got type: '${typeof(this.rawTemplate)}'`);
+    }
+
+    const actualIpfsCid = await IpfsHash.of(this.rawTemplate);
+    if (actualIpfsCid !== this.ipfsCid) {
+      throw Error(`InvalidTemplate: IpfsHash mismatch. Expected: ${this.ipfsCid} but got: ${actualIpfsCid}`);
+    }
+
+    if (typeof(this.rawTemplate) !== 'string') {
+      throw Error(`InvalidTemplate: Unexpected template raw data. Expected type to be 'string'. Got type: '${typeof(this.rawTemplate)}'`);
+    }
+
+    this.initialize();
+
+    if (typeof(this.template) !== 'object') {
+      throw Error(`InvalidTemplate: Unexpected template metadata. Expected type to be 'object'. Got type: '${typeof(this.template)}'`);
+    }
+
+    if (this.template.command !== 'nft_template') {
+      throw Error(`InvalidTemplate: Unexpected command in template template. Got: ${this.template.command}`);
     }
   
-    if (this.metadata['version'] !== '0.0.1') {
-      throw Error(`InvalidMetadata: Unexpected version in template metadata. Got: ${this.metadata.version}`);
+    if (this.template.version !== '0.0.1') {
+      throw Error(`InvalidTemplate: Unexpected version in template template. Got: ${this.template.version}`);
     }
 
-    if (typeof(this.metadata['previous']) !== 'string' && !blockHashPattern.test(this.metadata['previous'])) {
-      throw Error(`InvalidMetadata: Invalid block hash for 'previous'. Got: ${this.metadata['previous']}`);
+    if (typeof(this.template.previous) !== 'string' && !blockHashPattern.test(this.template.previous)) {
+      throw Error(`InvalidTemplate: Invalid block hash for 'previous'. Got: ${this.template.previous}`);
+    }
+
+    if (typeof(this.template.issuer) !== 'string' && !accountPattern.test(this.template.issuer)) {
+      throw Error(`InvalidTemplate: Invalid issuer. Got: ${this.template.issuer}`);
     }
 
     if (this.hasLimitedSupply() && this.getMaxSupply() === undefined) {
-      throw Error(`InvalidMetadata: Unparseable value for max_supply. Got: ${this.metadata['max_supply']}`);     
+      throw Error(`InvalidTemplate: Unparseable value for max_supply. Got: ${this.template.max_supply}`);     
     }
+
+    this.validated = true;
   }
 }

@@ -4,7 +4,7 @@
     "sourceMap": true,
     "target": "es5",
     "outDir": "dist",
-    "types": ["node", "mocha", "bs58"]
+    "types": ["node", "mocha"]
   },
   "include": ["index.ts"]
 }

@@ -1,6 +1,6 @@
 import { NanoIpfs } from 'nano-ipfs';
 import { MetaTemplate } from './meta-template'
-import { INanoBlock, INanoAccountForwardIterable } from './interfaces/nano-interfaces';
+import { INanoBlock, INanoAccountForwardIterable } from 'nano-account-crawler/dist/nano-interfaces';
 const blockHashPattern: RegExp = new RegExp('^[0-9A-Za-z]{64}$');
 
 export class MetaTemplateBlockFinder {
@@ -14,13 +14,13 @@ export class MetaTemplateBlockFinder {
     this.metaTemplate = metaTemplate;
     this.accountForwardIterable = accountForwardIterable;
 
-    this.metaTemplate.validate();
+    this.metaTemplate.initializeAndValidate();
   }
 
   async traceAssetFirstSendBlocks(): Promise<INanoBlock[]> {
     const assetFirstSendBlocks = []
     const templateBlock: INanoBlock = this.accountForwardIterable.firstBlock();
-    const templateRepresentative: string = this.nanoIpfs.hexToIpfsCidV0(templateBlock.hash);
+    const templateRepresentative: string = this.nanoIpfs.publicKeyToAccount(templateBlock.hash);
     this.validateTemplateBlock(templateBlock);
 
     for await (const block of this.accountForwardIterable) {
@@ -41,16 +41,16 @@ export class MetaTemplateBlockFinder {
     const representative = templateBlock["representative"];
   
     if (ipfsCidRepresentative !== representative) {
-      throw Error(`InvalidTemplateBlock: Unexpected representative for templateBlock. Expected ${ipfsCidRepresentative}, got: ${representative}`);
+      throw Error(`InvalidTemplateBlock: Unexpected representative for templateBlock. Expected ${ipfsCidRepresentative}, got: ${representative}. Template previous: ${this.metaTemplate.getPrevious()}`);
     }
 
-    if (typeof(templateBlock['hash']) !== 'string' || !blockHashPattern.test(templateBlock['hash'])) {
-      throw Error(`InvalidTemplateBlock: Expected block hash for templateBlock. Got: ${templateBlock['hash']}`);
+    if (typeof(templateBlock.hash) !== 'string' || !blockHashPattern.test(templateBlock.hash)) {
+      throw Error(`InvalidTemplateBlock: Expected block hash for templateBlock. Got: ${templateBlock.hash}`);
     }
 
     const templatePrevious = this.metaTemplate.getPrevious();
     if (templatePrevious !== templateBlock.previous) {
-      throw Error(`InvalidTemplateBlock: Expected templateBlock.previous to match templatePrevious. Got templateBlock.previous: ${templateBlock.previous}. Got templatePrevious: ${templatePrevious}.`)
+      throw Error(`InvalidTemplateBlock: Expected templateBlock.previous to match templatePrevious. Got templateBlock.previous: ${templateBlock.previous}. Got templatePrevious: ${templatePrevious}.`);
     }
   }
 }
