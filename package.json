@@ -12,10 +12,10 @@
   "license": "MIT",
   "dependencies": {
     "@bananocoin/bananojs": "^2.4.15",
-    "ipfs-only-hash": "^4.0.0",
     "nano-account-crawler": "git+https://github.com/Airtune/nano-account-crawler.git",
     "nano-ipfs": "git+https://github.com/Airtune/nano-ipfs.git",
-    "node-fetch": "^2.6.1"
+    "node-fetch": "^2.6.1",
+    "pure-ipfs-only-hash": "^4.0.2"
   },
   "devDependencies": {
     "@types/mocha": "^9.0.0",

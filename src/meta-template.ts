@@ -1,4 +1,4 @@
-import * as IpfsHash from 'ipfs-only-hash';
+import * as IpfsHash from 'pure-ipfs-only-hash';
 import { ITemplateJson } from "./interfaces/template-json";
 
 const blockHashPattern: RegExp = new RegExp('^[0-9A-Za-z]{64}$');
