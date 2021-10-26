@@ -6,12 +6,13 @@
   "types": "./dist/index.d.ts",
   "scripts": {
     "test": "mocha --require ts-node/register ./test/*.spec.ts",
-    "testOne": "mocha --require ts-node/register ./test/meta-template-block-finder.spec.ts"
+    "testOne": "mocha --require ts-node/register ./test/mutex-manager.spec.ts"
   },
   "author": "Airtune",
   "license": "MIT",
   "dependencies": {
     "@bananocoin/bananojs": "^2.4.15",
+    "async-mutex": "^0.3.2",
     "nano-account-crawler": "git+https://github.com/Airtune/nano-account-crawler.git",
     "nano-ipfs": "git+https://github.com/Airtune/nano-ipfs.git",
     "node-fetch": "^2.6.1",
