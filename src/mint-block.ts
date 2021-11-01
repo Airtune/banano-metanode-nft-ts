@@ -7,7 +7,7 @@ function validateMintRepresentative(block: INanoBlock) {
   const representativeHex = bananojs.getAccountPublicKey(block.representative);
 
   if (representativeHex.match(nftSupplyHexPattern)) {
-    throw Error(`MintBlockError: Expected assetRepresentative encoded from IPFS CID. Got nftSupplyRepresentative: ${block.representative}`);
+    throw Error(`MintBlockError: Expected metadataRepresentative encoded from IPFS CID. Got nftSupplyRepresentative: ${block.representative}`);
   }
 }
 

@@ -9,7 +9,7 @@ import { IMetaBlock } from "./interfaces/meta-block";
 // Crawler to trace the chain following a single mint of an asset.
 export class AssetCrawler {
   private _assetChain: IMetaBlock[];
-  private _assetRepresentative: string;
+  private _metadataRepresentative: string;
   private _issuer: string;
   private _mintBlock: INanoBlock;
   private _nanoNode: NanoNode;
@@ -22,7 +22,7 @@ export class AssetCrawler {
   }
 
   async crawl() {
-    this._assetRepresentative = bananoIpfs.publicKeyToAccount(this._mintBlock.hash);
+    this._metadataRepresentative = bananoIpfs.publicKeyToAccount(this._mintBlock.hash);
 
     await this.parseAssetChainFromMintBlock();
 
@@ -80,7 +80,7 @@ export class AssetCrawler {
     return this._issuer;
   }
 
-  public get assetRepresentative() {
-    return this._assetRepresentative;
+  public get metadataRepresentative() {
+    return this._metadataRepresentative;
   }
 }

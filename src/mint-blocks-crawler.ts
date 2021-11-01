@@ -7,7 +7,6 @@ import { validateMintBlock, isCancelSupplyBlock } from "./mint-block";
 
 // Crawler to find all mint blocks for a specific supply block
 export class MintBlocksCrawler {
-  private _assetRepresentative: string;
   private _hasLimitedSupply: boolean;
   private _ipfsCID: string;
   private _issuer: string;
@@ -15,6 +14,7 @@ export class MintBlocksCrawler {
   private _nftSupplyBlock: INanoBlock;
   private _nftSupplyBlockHash: string;
   private _maxSupply: BigInt;
+  private _metadataRepresentative: string;
   private _mintBlocks: INanoBlock[];
   private _version: string;
 
@@ -42,7 +42,7 @@ export class MintBlocksCrawler {
         this.parseFirstMint(block);
         this._mintBlocks.push(block);
 
-      } else if (blockOffset > 1 && block.representative === this._assetRepresentative) {
+      } else if (blockOffset > 1 && block.representative === this._metadataRepresentative) {
         validateMintBlock(block);
         this._mintBlocks.push(block);
 
@@ -86,8 +86,8 @@ export class MintBlocksCrawler {
   }
 
   private parseFirstMint(block: INanoBlock) {
-    this._assetRepresentative = block.representative;
-    this._ipfsCID = bananoIpfs.accountToIpfsCidV0(this._assetRepresentative);
+    this._metadataRepresentative = block.representative;
+    this._ipfsCID = bananoIpfs.accountToIpfsCidV0(this._metadataRepresentative);
   }
 
   private supplyExceeded(): boolean {
