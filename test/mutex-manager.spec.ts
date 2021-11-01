@@ -1,7 +1,7 @@
 import { Mutex } from 'async-mutex';
 import * as chai from 'chai';
 import * as chaiAsPromised from 'chai-as-promised';
-import { MutexManager } from '../src/mutex-manager';
+import { MutexManager } from '../src/lib/mutex-manager';
 
 chai.use(chaiAsPromised);
 const expect = chai.expect;
