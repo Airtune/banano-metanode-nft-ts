@@ -1,6 +1,5 @@
 import * as bananojs from '@bananocoin/bananojs';
 import { INanoBlock } from "nano-account-crawler/dist/nano-interfaces";
-import { cancelRepresentative } from "./constants";
 import { nftSupplyHexPattern } from "./constants";
 
 function validateMintRepresentative(block: INanoBlock) {
@@ -35,8 +34,4 @@ export function validateMintBlock(mintBlock: INanoBlock) {
     throw Error(`MintBlockError: Unexpected block type. Expected 'state'. Got: '${mintBlock.type}' for block: ${mintBlock.hash}`);
 
   }
-}
-
-export function isCancelSupplyBlock(block: INanoBlock) {
-  return block.representative == cancelRepresentative;
 }

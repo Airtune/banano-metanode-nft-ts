@@ -3,7 +3,8 @@ import { NanoAccountForwardCrawler } from 'nano-account-crawler/dist/nano-accoun
 import { NanoNode } from 'nano-account-crawler/dist/nano-node';
 import { bananoIpfs } from "./lib/banano-ipfs";
 import { parseSupplyRepresentative } from "./supply-block";
-import { validateMintBlock, isCancelSupplyBlock } from "./mint-block";
+import { validateMintBlock } from "./mint-block";
+import { isCancelSupplyBlock } from "./cancel-supply-block";
 
 // Crawler to find all mint blocks for a specific supply block
 export class MintBlocksCrawler {
