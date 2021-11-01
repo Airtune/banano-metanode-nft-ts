@@ -40,7 +40,7 @@ export class AssetCrawler {
 
       }
     }
-    /*
+    */
   }
 
   private async parseAssetChainFromMintBlock() {
