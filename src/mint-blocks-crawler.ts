@@ -31,6 +31,7 @@ export class MintBlocksCrawler {
     this._mintBlocks = [];
     let blockOffset: number = 0;
 
+    // Crawl forward in issuer account from supply block
     for await (const block of banCrawler) {
       if (blockOffset === 0) {
         this.parseSupplyBlock(block);
