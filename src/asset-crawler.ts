@@ -5,7 +5,6 @@ import { bananoIpfs } from "./lib/banano-ipfs";
 import { findReceiveBlock } from "./lib/find-receive-block";
 import { NanoAccountForwardCrawler } from "nano-account-crawler/dist/nano-account-forward-crawler";
 import { IMetaBlock } from "./interfaces/meta-block";
-import { nextTick } from "process";
 
 // Crawler to trace the chain following a single mint of an asset.
 export class AssetCrawler {
