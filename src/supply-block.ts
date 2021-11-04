@@ -1,9 +1,9 @@
 import * as bananojs from '@bananocoin/bananojs';
-import { nftSupplyHexPattern } from "./constants";
+import { supplyHexPattern } from "./constants";
 
 export function parseSupplyRepresentative(representative): { version: string, maxSupply: BigInt } {
-  const nftSupplyHex = bananojs.getAccountPublicKey(representative);
-  const match = nftSupplyHex.match(nftSupplyHexPattern);
+  const supplyHex = bananojs.getAccountPublicKey(representative);
+  const match = supplyHex.match(supplyHexPattern);
   const major: BigInt = BigInt(`0x${match.groups.major}`);
   const minor: BigInt = BigInt(`0x${match.groups.minor}`);
   const patch: BigInt = BigInt(`0x${match.groups.patch}`);
