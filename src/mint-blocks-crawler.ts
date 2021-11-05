@@ -2,9 +2,9 @@ import { INanoBlock } from "nano-account-crawler/dist/nano-interfaces";
 import { NanoAccountForwardCrawler } from 'nano-account-crawler/dist/nano-account-forward-crawler';
 import { NanoNode } from 'nano-account-crawler/dist/nano-node';
 import { bananoIpfs } from "./lib/banano-ipfs";
-import { parseSupplyRepresentative } from "./supply-block";
+import { parseFinishSupplyRepresentative, parseSupplyRepresentative } from "./supply-block";
 import { validateMintBlock } from "./mint-block";
-import { isCancelSupplyBlock } from "./cancel-supply-block";
+import { CANCEL_SUPPLY_REPRESENTATIVE } from "./constants";
 
 // Crawler to find all mint blocks for a specific supply block
 export class MintBlocksCrawler {
@@ -35,10 +35,15 @@ export class MintBlocksCrawler {
     // Crawl forward in issuer account from supply block
     for await (const block of banCrawler) {
       if (blockOffset === 0) {
-        this.parseSupplyBlock(block);
+        if (!this.parseSupplyBlock(block)) {
+          throw Error(`SupplyBlockError: Unable to parse supply block: ${block.hash}`);
+        }
+
+      } else if (this.parseFinishSupplyBlock(block)) {
+        break;
 
       } else if (blockOffset === 1) {
-        if (isCancelSupplyBlock(block)) { break; };
+        if (block.representative === CANCEL_SUPPLY_REPRESENTATIVE) { break; };
         validateMintBlock(block);
         this.parseFirstMint(block);
         this._mintBlocks.push(block);
@@ -49,7 +54,9 @@ export class MintBlocksCrawler {
 
       }
 
-      if (this.supplyExceeded()) { break; }
+      if (this.supplyExceeded()) {
+        break;
+      }
       blockOffset = blockOffset + 1;
     }
   }
@@ -78,12 +85,26 @@ export class MintBlocksCrawler {
     return this._hasLimitedSupply;
   }
 
-  private parseSupplyBlock(block: INanoBlock) {
-    const { version, maxSupply } = parseSupplyRepresentative(block.representative);
+  private parseSupplyBlock(block: INanoBlock): boolean {
+    const supplyData = parseSupplyRepresentative(block.representative);
+    if (!supplyData) { return false }
+
+    const { version, maxSupply } = supplyData;
     this._version = version;
     this._maxSupply = maxSupply;
     this._nftSupplyBlock = block;
     this._hasLimitedSupply = this._maxSupply > BigInt("0");
+    return true;
+  }
+
+  private parseFinishSupplyBlock(block: INanoBlock): boolean {
+    const finishSupplyData = parseFinishSupplyRepresentative(block.representative);
+    if (!finishSupplyData) {
+      return false;
+    }
+
+    const { supplyBlockHeight } = finishSupplyData;
+    return supplyBlockHeight === BigInt(this._nftSupplyBlock.height);
   }
 
   private parseFirstMint(block: INanoBlock) {

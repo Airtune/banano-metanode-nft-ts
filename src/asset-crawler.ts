@@ -5,6 +5,8 @@ import { bananoIpfs } from "./lib/banano-ipfs";
 import { findReceiveBlock } from "./lib/find-receive-block";
 import { NanoAccountForwardCrawler } from "nano-account-crawler/dist/nano-account-forward-crawler";
 import { IMetaBlock } from "./interfaces/meta-block";
+import { nextMetaBlockType } from "./next-meta-block-type";
+import { MAX_NANO_BLOCK_TRACE_LENGTH } from "./constants";
 
 // Crawler to trace the chain following a single mint of an asset.
 export class AssetCrawler {
@@ -23,60 +25,32 @@ export class AssetCrawler {
   }
 
   async crawl() {
-    await this.parseAssetChainFromMintBlock();
+    await this.addMintBlockToAssetChain();
     this._assetRepresentative = bananoIpfs.publicKeyToAccount(this._mintBlock.hash);
     this._metadataRepresentative = this._mintBlock.representative;
 
-    let frontierCrawler = new NanoAccountForwardCrawler(this._nanoNode, this.frontier.account, this.frontier.nanoBlock.hash, "1");
+    let nanoBlockTraceLength = 2;
 
-    // trace forward in account history from frontier block
-    for await (const nanoBlock of frontierCrawler) {
-      const metaBlockType = this.identifyMetaBlockType(nanoBlock, this.frontier);
-      if (metaBlockType == undefined) { continue; }
-
-      const [nanotype, metaAction] = metaBlockType.split('#');
-
-      if (metaBlockType === 'send#asset') {
-        this._assetChain.push({
-          type: metaBlockType,
-          account: this.frontier.account,
-          nanoBlock: nanoBlock
-        });
-        break;
-      }
-
-      if (metaAction === 'finish_supply') {
-        this._assetChain.push({
-          type: metaBlockType,
-          account: this.frontier.account,
-          nanoBlock: nanoBlock
-        });
+    while (await this.addNextFrontierToAssetChain()) {
+      nanoBlockTraceLength = nanoBlockTraceLength + 1;
+      if (nanoBlockTraceLength >= MAX_NANO_BLOCK_TRACE_LENGTH) {
         break;
       }
     }
   }
 
-  private async parseAssetChainFromMintBlock(): Promise<void> {
+  private async addMintBlockToAssetChain(): Promise<void> {
     if (this._mintBlock.subtype == 'send' && this._mintBlock.type === 'state') {
       this._assetChain.push({
+        state: 'send',
         type: 'send#mint',
         account: this._issuer,
         nanoBlock: this._mintBlock
       });
 
-      const blockHash = this._mintBlock.hash;
-      const recipient = this._mintBlock.account;
-      const receiveBlock = await findReceiveBlock(this._issuer, blockHash, recipient);
-      if (typeof receiveBlock !== 'undefined') {
-        this._assetChain.push({
-          type: 'receive#asset',
-          account: recipient,
-          nanoBlock: receiveBlock
-        });
-      }
-
     } else if (this._mintBlock.subtype == 'change' && this._mintBlock.type === 'state') {
       this._assetChain.push({
+        state: 'ownership',
         type: 'change#mint',
         account: this._issuer,
         nanoBlock: this._mintBlock
@@ -88,18 +62,52 @@ export class AssetCrawler {
     }
   }
 
-  private identifyMetaBlockType(block: INanoBlock, frontier: IMetaBlock): (string|undefined) {
-    if (frontier.type === 'receive#asset' || frontier.type === 'change#mint' || frontier.type === 'send#payment') {
-      if (block.representative === this._assetRepresentative && block.subtype === 'send' && block.type === 'state') {
-        return 'send#asset';
-      }
+  private async addNextFrontierToAssetChain() {
+    let frontierCrawler = new NanoAccountForwardCrawler(this._nanoNode, this.frontier.account, this.frontier.nanoBlock.hash, "1");
 
-      if (block.representative === this._assetRepresentative && block.subtype === 'send' && block.type === 'state') {
-        return 'send#asset';
+    if (this.frontier.state == 'ownership') {
+      // trace forward in account history from frontier block
+      for await (const nanoBlock of frontierCrawler) {
+        const metaBlockType = nextMetaBlockType(this, nanoBlock);
+        if (metaBlockType == undefined) { continue; }
+
+        if (metaBlockType === 'send#asset') {
+          this._assetChain.push({
+            state: 'send',
+            type: metaBlockType,
+            account: this.frontier.account,
+            nanoBlock: nanoBlock
+          });
+          return true;
+        }
+
+        if (metaBlockType === 'send#asset') {
+          this._assetChain.push({
+            state: 'send',
+            type: metaBlockType,
+            account: this.frontier.account,
+            nanoBlock: nanoBlock
+          });
+          return true;
+        }
       }
     }
 
-    return undefined;
+    if (this.frontier.state == 'send') {
+      const blockHash = this.frontier.nanoBlock.hash;
+      const recipient = this.frontier.nanoBlock.account;
+      const receiveBlock = await findReceiveBlock(this.frontier.account, blockHash, recipient);
+      if (typeof receiveBlock !== 'undefined') {
+        this._assetChain.push({
+          state: 'ownership',
+          type: 'receive#asset',
+          account: recipient,
+          nanoBlock: receiveBlock
+        });
+      }
+    }
+
+    return false;
   }
 
   public get assetChain() {

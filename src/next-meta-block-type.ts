@@ -4,14 +4,13 @@ import { IMetaBlock } from "./interfaces/meta-block";
 import { parseAtomicSwapRepresentative } from "./atomic-swap-representative";
 import { IAtomicSwapConditions } from "./interfaces/atomic-swap-conditions";
 
-export function identifyMetaBlockType(assetCrawler: AssetCrawler, block: INanoBlock): (string|undefined) {
+// Identify type for block added after current frontier in assetCrawler.
+export function nextMetaBlockType(assetCrawler: AssetCrawler, block: INanoBlock): (string|undefined) {
   if (block.type !== 'state') { return undefined; }
 
-  // Identify new block based on current frontier for the asset
   const frontier: IMetaBlock = assetCrawler.frontier;
-  const frontierCategory = identifyFrontierCategory(frontier);
 
-  if (frontierCategory === 'ownership') {
+  if (frontier.state === 'ownership') {
     if (block.subtype === 'send') {
       if (block.representative === assetCrawler.assetRepresentative) {
         return 'send#asset';
@@ -27,37 +26,23 @@ export function identifyMetaBlockType(assetCrawler: AssetCrawler, block: INanoBl
     }
   }
 
-  if (frontierCategory === 'send') {
+  if (frontier.state === 'send') {
     if (block.link === frontier.nanoBlock.hash && block.subtype === 'receive') {
       return 'receive#asset';
     }
   }
 
-  if (frontierCategory === 'atomic_swap') {
+  if (frontier.state === 'send_atomic_swap') {
     if (block.link === frontier.nanoBlock.hash && block.subtype === 'receive') {
-      return 'receive#asset';
+      const atomicSwapConditions: IAtomicSwapConditions = parseAtomicSwapRepresentative(frontier.nanoBlock.representative);
+      if (atomicSwapConditions && atomicSwapConditions.receiveHeight == BigInt(block.height)) {
+        return 'receive#atomic_swap';
+      } else {
+        return 'receive#cancel_atomic_swap';
+      }
     }
   }
 
   // Ignore block if it doesn't match any meta block types.
-  return undefined;
-}
-
-function identifyFrontierCategory(frontier: IMetaBlock): (string|undefined) {
-  // Frontier: Received an asset.
-  if (frontier.type === 'receive#asset' || frontier.type === 'change#mint' || frontier.type === 'send#payment') {
-    return 'ownership'
-  }
-
-  // Frontier: Sent an asset.
-  if (frontier.type === 'send#asset' || frontier.type == 'send#mint') {
-    return 'send'
-  }
-
-  // Frontier: Sent an atomic swap
-  if (frontier.type === 'send#atomic_swap') {
-    return 'atomic_swap'
-  }
-
   return undefined;
 }

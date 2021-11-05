@@ -1,11 +1,11 @@
 import * as bananojs from '@bananocoin/bananojs';
 import { INanoBlock } from "nano-account-crawler/dist/nano-interfaces";
-import { supplyHexPattern } from "./constants";
+import { SUPPLY_HEX_PATTERN } from "./constants";
 
 function validateMintRepresentative(block: INanoBlock) {
   const representativeHex = bananojs.getAccountPublicKey(block.representative);
 
-  if (representativeHex.match(supplyHexPattern)) {
+  if (representativeHex.match(SUPPLY_HEX_PATTERN)) {
     throw Error(`MintBlockError: Expected metadataRepresentative encoded from IPFS CID. Got nftSupplyRepresentative: ${block.representative}`);
   }
 }
