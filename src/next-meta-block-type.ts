@@ -43,6 +43,17 @@ export function nextMetaBlockType(assetCrawler: AssetCrawler, block: INanoBlock)
     }
   }
 
+  if (frontier.state === 'pending_atomic_swap') {
+    if (block.link === frontier.nanoBlock.hash && block.subtype === 'receive') {
+      const atomicSwapConditions: IAtomicSwapConditions = parseAtomicSwapRepresentative(frontier.nanoBlock.representative);
+      if (atomicSwapConditions && atomicSwapConditions.receiveHeight == BigInt(block.height)) {
+        return 'receive#atomic_swap';
+      } else {
+        return 'receive#cancel_atomic_swap';
+      }
+    }
+  }
+
   // Ignore block if it doesn't match any meta block types.
   return undefined;
 }
