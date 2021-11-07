@@ -2,7 +2,7 @@ import { INanoBlock } from "nano-account-crawler/dist/nano-interfaces";
 import { NanoAccountForwardCrawler } from 'nano-account-crawler/dist/nano-account-forward-crawler';
 import { NanoNode } from 'nano-account-crawler/dist/nano-node';
 import { bananoIpfs } from "./lib/banano-ipfs";
-import { parseFinishSupplyRepresentative, parseSupplyRepresentative } from "./supply-block";
+import { parseFinishSupplyRepresentative, parseSupplyRepresentative } from "./supply-representative";
 import { validateMintBlock } from "./mint-block";
 import { CANCEL_SUPPLY_REPRESENTATIVE } from "./constants";
 
