@@ -14,7 +14,7 @@ export class MintBlocksCrawler {
   private _nanoNode: NanoNode;
   private _nftSupplyBlock: INanoBlock;
   private _nftSupplyBlockHash: string;
-  private _maxSupply: BigInt;
+  private _maxSupply: bigint;
   private _metadataRepresentative: string;
   private _mintBlocks: INanoBlock[];
   private _version: string;

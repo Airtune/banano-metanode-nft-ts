@@ -13,4 +13,4 @@ export const FINISH_SUPPLY_HEX_PATTERN = /^3614865E0051BA0033BB581E(?<supplyBloc
 // Used following an NFT supply block in place of the first mint block.
 export const CANCEL_SUPPLY_REPRESENTATIVE = 'ban_1nftsupp1ycance1111oops1111that1111was1111my1111bad1hq5sjhey';
 
-export const MAX_NANO_BLOCK_TRACE_LENGTH = 10000;
+export const MAX_NANO_BLOCK_TRACE_LENGTH: bigint = BigInt(10000);

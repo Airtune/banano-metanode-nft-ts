@@ -1,10 +1,10 @@
 import * as bananojs from '@bananocoin/bananojs';
-import { atomicSwapHexPattern } from "./constants";
+import { ATOMIC_SWAP_HEX_PATTERN } from "./constants";
 import { IAtomicSwapConditions } from './interfaces/atomic-swap-conditions';
 
 export function parseAtomicSwapRepresentative(representative): (undefined|IAtomicSwapConditions) {
   const atomicSwapHex = bananojs.getAccountPublicKey(representative);
-  const match = atomicSwapHex.match(atomicSwapHexPattern);
+  const match = atomicSwapHex.match(ATOMIC_SWAP_HEX_PATTERN);
   
   if (match) {
     return {

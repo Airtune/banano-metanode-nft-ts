@@ -1,5 +1,5 @@
 export interface IAtomicSwapConditions {
-  assetHeight: BigInt,
-  receiveHeight: BigInt,
-  minRaw: BigInt
+  assetHeight: bigint,
+  receiveHeight: bigint,
+  minRaw: bigint
 }
