@@ -27,7 +27,7 @@ export async function pendingAddNextMetaBlock(assetCrawler: AssetCrawler): Promi
           nanoBlockTraceLength: assetCrawler.nanoBlockTraceLength
         });
         return true;
-      } else {
+      } else if (!!nanoBlock && nanoBlock.subtype) {
         // Atomic swap conditions were not met.
         // Continue chain from send#atomic_swap again with state 'ownership' instead of state 'send_atomic_swap'.
         assetCrawler.assetChain.push({
