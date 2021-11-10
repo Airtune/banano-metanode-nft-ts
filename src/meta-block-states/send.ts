@@ -5,9 +5,12 @@ export async function sendAddNextMetaBlock(assetCrawler: AssetCrawler): Promise<
   const sendBlockHash = assetCrawler.frontier.nanoBlock.hash;
   const recipient = assetCrawler.frontier.nanoBlock.account;
   const receiveBlock = await findReceiveBlock(assetCrawler.frontier.account, sendBlockHash, recipient);
+  // guards
+  if (typeof receiveBlock === 'undefined') { return false; }
+
   assetCrawler.nanoBlockTraceLength = assetCrawler.nanoBlockTraceLength + BigInt(1);
 
-  if (typeof receiveBlock !== 'undefined' && receiveBlock.subtype === 'receive' && receiveBlock.link === sendBlockHash) {
+  if (receiveBlock.subtype === 'receive' && receiveBlock.link === sendBlockHash) {
     assetCrawler.assetChain.push({
       state: 'ownership',
       type: 'receive#asset',
@@ -19,8 +22,6 @@ export async function sendAddNextMetaBlock(assetCrawler: AssetCrawler): Promise<
     });
     return true;
   }
-
-  
 
   return false;
 }

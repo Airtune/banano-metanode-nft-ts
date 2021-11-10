@@ -10,7 +10,8 @@ export async function ownershipAddNextMetaBlock(assetCrawler: AssetCrawler): Pro
   // trace forward in account history from frontier block
   let frontierCrawler = new NanoAccountForwardCrawler(assetCrawler.nanoNode, assetCrawler.frontier.account, assetCrawler.frontier.nanoBlock.hash, "1");
   for await (const nanoBlock of frontierCrawler) {
-    assetCrawler.nanoBlockTraceLength = assetCrawler.nanoBlockTraceLength + BigInt(1);
+    assetCrawler.nanoBlockTraceLength += BigInt(1);
+
     const metaBlockType = nextMetaBlockType(assetCrawler, nanoBlock);
     if (metaBlockType == undefined) { continue; }
 
