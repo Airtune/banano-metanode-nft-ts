@@ -11,7 +11,7 @@ import { NanoAccountForwardCrawler } from "nano-account-crawler/dist/nano-accoun
 import { bananoIpfs } from "./lib/banano-ipfs";
 
 // meta node
-import { MAX_NANO_BLOCK_TRACE_LENGTH } from "./constants";
+import { MAX_TRACE_LENGTH } from "./constants";
 import { parseAtomicSwapRepresentative } from "./atomic-swap-representative";
 
 // meta block states
@@ -28,14 +28,14 @@ export class AssetCrawler {
   private _issuer: string;
   private _mintBlock: INanoBlock;
   private _nanoNode: NanoNode;
-  private _nanoBlockTraceLength: bigint;
+  private _traceLength: bigint;
 
   constructor(nanoNode: NanoNode, issuer: string, mintBlock: INanoBlock) {
     this._issuer = issuer;
     this._nanoNode = nanoNode;
     this._mintBlock = mintBlock;
     this._assetChain = [];
-    this._nanoBlockTraceLength = undefined;
+    this._traceLength = undefined;
   }
 
   async crawl() {
@@ -43,10 +43,10 @@ export class AssetCrawler {
     this._assetRepresentative = bananoIpfs.publicKeyToAccount(this._mintBlock.hash);
     this._metadataRepresentative = this._mintBlock.representative;
 
-    this._nanoBlockTraceLength = BigInt(1);
+    this._traceLength = BigInt(1);
 
     while (await this.addNextFrontierToAssetChain()) {
-      if (this._nanoBlockTraceLength >= MAX_NANO_BLOCK_TRACE_LENGTH) {
+      if (this._traceLength >= MAX_TRACE_LENGTH) {
         break;
       }
     }
@@ -61,7 +61,7 @@ export class AssetCrawler {
         owner: this._issuer,
         locked: false,
         nanoBlock: this._mintBlock,
-        nanoBlockTraceLength: this._nanoBlockTraceLength
+        traceLength: this._traceLength
       });
 
     } else if (this._mintBlock.subtype == 'change' && this._mintBlock.type === 'state') {
@@ -72,7 +72,7 @@ export class AssetCrawler {
         owner: this._issuer,
         locked: false,
         nanoBlock: this._mintBlock,
-        nanoBlockTraceLength: this._nanoBlockTraceLength
+        traceLength: this._traceLength
       });
 
     } else {
@@ -121,12 +121,12 @@ export class AssetCrawler {
     return this._metadataRepresentative;
   }
 
-  public get nanoBlockTraceLength() {
-    return this._nanoBlockTraceLength;
+  public get traceLength() {
+    return this._traceLength;
   }
 
-  public set nanoBlockTraceLength(len: bigint) {
-    this._nanoBlockTraceLength = len;
+  public set traceLength(len: bigint) {
+    this._traceLength = len;
   }
 
   public get nanoNode() {

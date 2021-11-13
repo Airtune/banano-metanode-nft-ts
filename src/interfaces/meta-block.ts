@@ -7,5 +7,5 @@ export interface IMetaBlock {
   owner: string,
   locked: boolean,
   nanoBlock: INanoBlock,
-  nanoBlockTraceLength: bigint
+  traceLength: bigint
 }

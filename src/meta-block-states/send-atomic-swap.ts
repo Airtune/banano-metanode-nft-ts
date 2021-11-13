@@ -17,8 +17,8 @@ export async function sendAtomicSwapAddNextMetaBlock(assetCrawler: AssetCrawler)
   const receiveBlock = await findBlockAtHeight(recipient, atomicSwapConditions.receiveHeight);
   // guard
   if (typeof receiveBlock === 'undefined') { return false; }
-
-  assetCrawler.nanoBlockTraceLength += BigInt(1);
+  // NB: Trace length from findBlockAtHeight might be significantly larger than 1.
+  assetCrawler.traceLength += BigInt(1);
 
   if (receiveBlock.subtype === 'receive' && receiveBlock.link === sendAtomicSwapHash && BigInt(receiveBlock.height) === atomicSwapConditions.receiveHeight) {
     assetCrawler.assetChain.push({
@@ -28,7 +28,7 @@ export async function sendAtomicSwapAddNextMetaBlock(assetCrawler: AssetCrawler)
       owner: sender,
       locked: true,
       nanoBlock: receiveBlock,
-      nanoBlockTraceLength: assetCrawler.nanoBlockTraceLength
+      traceLength: assetCrawler.traceLength
     });
   } else {
     // Atomic swap conditions were not met. Start chain from send#atomic_swap with new state.
@@ -39,7 +39,7 @@ export async function sendAtomicSwapAddNextMetaBlock(assetCrawler: AssetCrawler)
       owner: sender,
       locked: false,
       nanoBlock: receiveBlock,
-      nanoBlockTraceLength: assetCrawler.nanoBlockTraceLength
+      traceLength: assetCrawler.traceLength
     });
     assetCrawler.assetChain.push({
       state: 'ownership',
@@ -48,7 +48,7 @@ export async function sendAtomicSwapAddNextMetaBlock(assetCrawler: AssetCrawler)
       owner: sendAtomicSwap.account,
       locked: false,
       nanoBlock: sendAtomicSwap.nanoBlock,
-      nanoBlockTraceLength: assetCrawler.nanoBlockTraceLength
+      traceLength: assetCrawler.traceLength
     });
   }
 

@@ -17,8 +17,8 @@ export async function pendingAddNextMetaBlock(assetCrawler: AssetCrawler): Promi
   if (sendAtomicSwap.state !== 'send_atomic_swap') {
     throw Error(`UnexpectedMetaChain: Expected states of the chain to be send_atomic_swap -> pending_atomic_swap -> ... Got: ${sendAtomicSwap.state} -> ${assetCrawler.frontier.state} -> ...`);
   }
-
-  assetCrawler.nanoBlockTraceLength += BigInt(1);
+  // NB: Trace length from findBlockAtHeight might be significantly larger than 1.
+  assetCrawler.traceLength += BigInt("1");
 
   const atomicSwapConditions: IAtomicSwapConditions = parseAtomicSwapRepresentative(sendAtomicSwap.nanoBlock.representative);
   const payedEnough = BigInt(nextBlock.amount) >= atomicSwapConditions.minRaw;
@@ -32,7 +32,7 @@ export async function pendingAddNextMetaBlock(assetCrawler: AssetCrawler): Promi
       owner: assetCrawler.frontier.account,
       locked: false,
       nanoBlock: nextBlock,
-      nanoBlockTraceLength: assetCrawler.nanoBlockTraceLength
+      traceLength: assetCrawler.traceLength
     });
   } else {
     // Atomic swap conditions were not met.
@@ -44,7 +44,7 @@ export async function pendingAddNextMetaBlock(assetCrawler: AssetCrawler): Promi
       owner: sendAtomicSwap.account,
       locked: false,
       nanoBlock: nextBlock,
-      nanoBlockTraceLength: assetCrawler.nanoBlockTraceLength
+      traceLength: assetCrawler.traceLength
     });
     assetCrawler.assetChain.push({
       state: 'ownership',
@@ -53,7 +53,7 @@ export async function pendingAddNextMetaBlock(assetCrawler: AssetCrawler): Promi
       owner: sendAtomicSwap.account,
       locked: false,
       nanoBlock: sendAtomicSwap.nanoBlock,
-      nanoBlockTraceLength: assetCrawler.nanoBlockTraceLength
+      traceLength: assetCrawler.traceLength
     });
   }
 

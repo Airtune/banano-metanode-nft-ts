@@ -8,7 +8,7 @@ export async function sendAddNextMetaBlock(assetCrawler: AssetCrawler): Promise<
   // guards
   if (typeof receiveBlock === 'undefined') { return false; }
 
-  assetCrawler.nanoBlockTraceLength = assetCrawler.nanoBlockTraceLength + BigInt(1);
+  assetCrawler.traceLength += BigInt(1);
 
   if (receiveBlock.subtype === 'receive' && receiveBlock.link === sendBlockHash) {
     assetCrawler.assetChain.push({
@@ -18,7 +18,7 @@ export async function sendAddNextMetaBlock(assetCrawler: AssetCrawler): Promise<
       owner: recipient,
       locked: false,
       nanoBlock: receiveBlock,
-      nanoBlockTraceLength: assetCrawler.nanoBlockTraceLength
+      traceLength: assetCrawler.traceLength
     });
     return true;
   }
