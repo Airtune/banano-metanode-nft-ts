@@ -15,10 +15,18 @@ import { MAX_TRACE_LENGTH } from "./constants";
 import { parseAtomicSwapRepresentative } from "./atomic-swap-representative";
 
 // meta block states
+import { addMintMetaBlock } from "./meta-block-states/first_mint";
 import { ownershipAddNextMetaBlock } from "./meta-block-states/ownership";
 import { sendAddNextMetaBlock } from "./meta-block-states/send";
 import { sendAtomicSwapAddNextMetaBlock } from "./meta-block-states/send-atomic-swap";
 import { pendingAddNextMetaBlock } from "./meta-block-states/pending-atomic-swap";
+
+const addNextMetaBlockForState = {
+  "ownership": ownershipAddNextMetaBlock,
+  "send": sendAddNextMetaBlock,
+  "send_atomic_swap": sendAtomicSwapAddNextMetaBlock,
+  "pending_atomic_swap": pendingAddNextMetaBlock
+};
 
 // Crawler to trace the chain following a single mint of an asset.
 export class AssetCrawler {
@@ -39,10 +47,9 @@ export class AssetCrawler {
   }
 
   async crawl() {
-    await this.addMintBlockToAssetChain();
+    await addMintMetaBlock(this, this._mintBlock);
     this._assetRepresentative = bananoIpfs.publicKeyToAccount(this._mintBlock.hash);
     this._metadataRepresentative = this._mintBlock.representative;
-
     this._traceLength = BigInt(1);
 
     while (await this.addNextFrontierToAssetChain()) {
@@ -52,53 +59,14 @@ export class AssetCrawler {
     }
   }
 
-  private async addMintBlockToAssetChain(): Promise<void> {
-    if (this._mintBlock.subtype == 'send' && this._mintBlock.type === 'state') {
-      this._assetChain.push({
-        state: 'send',
-        type: 'send#mint',
-        account: this._issuer,
-        owner: this._issuer,
-        locked: false,
-        nanoBlock: this._mintBlock,
-        traceLength: this._traceLength
-      });
-
-    } else if (this._mintBlock.subtype == 'change' && this._mintBlock.type === 'state') {
-      this._assetChain.push({
-        state: 'ownership',
-        type: 'change#mint',
-        account: this._issuer,
-        owner: this._issuer,
-        locked: false,
-        nanoBlock: this._mintBlock,
-        traceLength: this._traceLength
-      });
-
-    } else {
-      throw Error(`MintBlockError: Unexpected mint block subtype: ${this._mintBlock.subtype}. Expected 'send' or 'change'`);
-
-    }
-  }
-
   private async addNextFrontierToAssetChain(): Promise<boolean> {
-    if (this.frontier.state == 'ownership') {
-      return await ownershipAddNextMetaBlock(this);
-    }
+    const addNextMetaBlock = addNextMetaBlockForState[this.frontier.state];
 
-    if (this.frontier.state == 'send') {
-      return await sendAddNextMetaBlock(this);
+    if (typeof addNextMetaBlock == "function") {
+      return addNextMetaBlock(this);
+    } else {
+      throw Error(`UnhandledState: State: ${this.frontier.state} was not handled for block: ${this.frontier.nanoBlock.hash}`);
     }
-
-    if (this.frontier.state == 'send_atomic_swap') {
-      return await sendAtomicSwapAddNextMetaBlock(this);
-    }
-
-    if (this.frontier.state == 'pending_atomic_swap') {
-      return await pendingAddNextMetaBlock(this);
-    }
-
-    throw Error(`UnhandledState: State: ${this.frontier.state} was not handled for block: ${this.frontier.nanoBlock.hash}`);
   }
 
   public get assetChain() {
