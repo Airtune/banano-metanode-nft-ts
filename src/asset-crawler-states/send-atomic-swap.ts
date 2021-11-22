@@ -1,7 +1,7 @@
 import { AssetCrawler } from "../asset-crawler";
 import { IAtomicSwapConditions } from "../interfaces/atomic-swap-conditions";
 import { parseAtomicSwapRepresentative } from "../block-parsers/atomic-swap";
-import { findBlockAtHeight } from "../lib/find-block-at-height";
+import { findBlockAtHeightAndPreviousBlock } from "../lib/find-block-at-height-and-previous-block";
 
 export async function sendAtomicSwapAddNextMetaBlock(assetCrawler: AssetCrawler): Promise<boolean> {
   const sendAtomicSwap = assetCrawler.frontier;
@@ -14,13 +14,20 @@ export async function sendAtomicSwapAddNextMetaBlock(assetCrawler: AssetCrawler)
   
   const sender = sendAtomicSwap.account;
   const recipient = sendAtomicSwap.nanoBlock.account;
-  const receiveBlock = await findBlockAtHeight(recipient, atomicSwapConditions.receiveHeight);
+  const blocks = await findBlockAtHeightAndPreviousBlock(recipient, atomicSwapConditions.receiveHeight);
   // guard
-  if (typeof receiveBlock === 'undefined') { return false; }
+  if (blocks === undefined) { return false; }
+
+  const [previousBlock, receiveBlock] = blocks;
   // NB: Trace length from findBlockAtHeight might be significantly larger than 1.
   assetCrawler.traceLength += BigInt(1);
 
-  if (receiveBlock.subtype === 'receive' && receiveBlock.link === sendAtomicSwapHash && BigInt(receiveBlock.height) === atomicSwapConditions.receiveHeight) {
+  const isReceive = receiveBlock.subtype === 'receive'
+  const receivesAtomicSwap = receiveBlock.link === sendAtomicSwapHash;
+  const hasCorrectHeight = BigInt(receiveBlock.height) === atomicSwapConditions.receiveHeight;
+  const representativeUnchanged = receiveBlock.representative == previousBlock.representative;
+
+  if (isReceive && receivesAtomicSwap && hasCorrectHeight && representativeUnchanged) {
     assetCrawler.assetChain.push({
       state: 'pending_atomic_swap',
       type: 'receive#atomic_swap',
