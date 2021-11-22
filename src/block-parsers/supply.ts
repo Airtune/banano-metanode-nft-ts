@@ -1,5 +1,5 @@
 import * as bananojs from '@bananocoin/bananojs';
-import { SUPPLY_HEX_PATTERN, FINISH_SUPPLY_HEX_PATTERN } from "./constants";
+import { SUPPLY_HEX_PATTERN, FINISH_SUPPLY_HEX_PATTERN } from "../constants";
 
 export function parseSupplyRepresentative(representative): { version: string, maxSupply: bigint } {
   const supplyHex = bananojs.getAccountPublicKey(representative);

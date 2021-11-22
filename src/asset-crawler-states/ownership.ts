@@ -4,7 +4,7 @@ import { IAtomicSwapConditions } from "../interfaces/atomic-swap-conditions";
 import { NanoAccountForwardCrawler } from "nano-account-crawler/dist/nano-account-forward-crawler";
 
 import { AssetCrawler } from "../asset-crawler";
-import { parseAtomicSwapRepresentative } from "../atomic-swap-representative";
+import { parseAtomicSwapRepresentative } from "../block-parsers/atomic-swap";
 import { IMetaBlock } from "../interfaces/meta-block";
 
 export async function ownershipAddNextMetaBlock(assetCrawler: AssetCrawler): Promise<boolean> {

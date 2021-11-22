@@ -12,14 +12,14 @@ import { bananoIpfs } from "./lib/banano-ipfs";
 
 // meta node
 import { MAX_TRACE_LENGTH } from "./constants";
-import { parseAtomicSwapRepresentative } from "./atomic-swap-representative";
+import { parseAtomicSwapRepresentative } from "./block-parsers/atomic-swap";
 
 // meta block states
-import { addMintMetaBlock } from "./meta-block-states/first_mint";
-import { ownershipAddNextMetaBlock } from "./meta-block-states/ownership";
-import { sendAddNextMetaBlock } from "./meta-block-states/send";
-import { sendAtomicSwapAddNextMetaBlock } from "./meta-block-states/send-atomic-swap";
-import { pendingAddNextMetaBlock } from "./meta-block-states/pending-atomic-swap";
+import { firstMintAddNextMetaBlocks } from "./asset-crawler-states/first-mint";
+import { ownershipAddNextMetaBlock } from "./asset-crawler-states/ownership";
+import { sendAddNextMetaBlock } from "./asset-crawler-states/send";
+import { sendAtomicSwapAddNextMetaBlock } from "./asset-crawler-states/send-atomic-swap";
+import { pendingAddNextMetaBlock } from "./asset-crawler-states/pending-atomic-swap";
 
 const addNextMetaBlockForState = {
   "ownership": ownershipAddNextMetaBlock,
@@ -47,7 +47,7 @@ export class AssetCrawler {
   }
 
   async crawl() {
-    await addMintMetaBlock(this, this._mintBlock);
+    await firstMintAddNextMetaBlocks(this, this._mintBlock);
     this._assetRepresentative = bananoIpfs.publicKeyToAccount(this._mintBlock.hash);
     this._metadataRepresentative = this._mintBlock.representative;
     this._traceLength = BigInt(1);

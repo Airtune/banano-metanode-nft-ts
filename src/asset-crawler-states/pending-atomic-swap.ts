@@ -3,7 +3,7 @@ import { IAtomicSwapConditions } from "../interfaces/atomic-swap-conditions";
 import { NanoAccountForwardCrawler } from "nano-account-crawler/dist/nano-account-forward-crawler";
 
 import { AssetCrawler } from "../asset-crawler";
-import { parseAtomicSwapRepresentative } from "../atomic-swap-representative";
+import { parseAtomicSwapRepresentative } from "../block-parsers/atomic-swap";
 import { findBlockAtHeight } from "../lib/find-block-at-height";
 
 export async function pendingAddNextMetaBlock(assetCrawler: AssetCrawler): Promise<boolean> {

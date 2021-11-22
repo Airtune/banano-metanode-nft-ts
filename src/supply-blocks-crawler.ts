@@ -1,32 +1,24 @@
 import { INanoBlock } from "nano-account-crawler/dist/nano-interfaces";
-import { NanoAccountForwardCrawler } from 'nano-account-crawler/dist/nano-account-forward-crawler';
+import { NanoAccountBackwardCrawler } from "nano-account-crawler/dist/nano-account-backward-crawler";
 import { NanoNode } from 'nano-account-crawler/dist/nano-node';
+
 import { bananoIpfs } from "./lib/banano-ipfs";
 import { parseFinishSupplyRepresentative, parseSupplyRepresentative } from "./block-parsers/supply";
 import { validateMintBlock } from "./block-validators/mint-block";
 import { CANCEL_SUPPLY_REPRESENTATIVE } from "./constants";
 
 // Crawler to find all mint blocks for a specific supply block
-export class MintBlocksCrawler {
-  private _hasLimitedSupply: boolean;
-  private _ipfsCID: string;
+export class SupplyBlocksCrawler {
   private _issuer: string;
   private _nanoNode: NanoNode;
-  private _nftSupplyBlock: INanoBlock;
-  private _nftSupplyBlockHash: string;
-  private _maxSupply: bigint;
-  private _metadataRepresentative: string;
-  private _mintBlocks: INanoBlock[];
-  private _version: string;
 
-  constructor(nanoNode: NanoNode, issuer: string, nftSupplyBlockHash: string) {
+  constructor(nanoNode: NanoNode, issuer: string) {
     this._nanoNode = nanoNode;
     this._issuer = issuer;
-    this._nftSupplyBlockHash = nftSupplyBlockHash;
   }
 
   async crawl() {
-    const banCrawler = new NanoAccountForwardCrawler(this._nanoNode, this._issuer, this._nftSupplyBlockHash);
+    const banCrawler = new NanoAccountBackwardCrawler(this._nanoNode, this._issuer);
     await banCrawler.initialize();
 
     this._mintBlocks = [];

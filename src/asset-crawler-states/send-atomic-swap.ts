@@ -1,6 +1,6 @@
 import { AssetCrawler } from "../asset-crawler";
 import { IAtomicSwapConditions } from "../interfaces/atomic-swap-conditions";
-import { parseAtomicSwapRepresentative } from "../atomic-swap-representative";
+import { parseAtomicSwapRepresentative } from "../block-parsers/atomic-swap";
 import { findBlockAtHeight } from "../lib/find-block-at-height";
 
 export async function sendAtomicSwapAddNextMetaBlock(assetCrawler: AssetCrawler): Promise<boolean> {

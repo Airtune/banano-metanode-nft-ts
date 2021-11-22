@@ -1,6 +1,6 @@
 import * as bananojs from '@bananocoin/bananojs';
 import { INanoBlock } from "nano-account-crawler/dist/nano-interfaces";
-import { SUPPLY_HEX_PATTERN } from "./constants";
+import { SUPPLY_HEX_PATTERN } from "../constants";
 
 function validateMintRepresentative(block: INanoBlock) {
   const representativeHex = bananojs.getAccountPublicKey(block.representative);
