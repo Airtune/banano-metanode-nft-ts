@@ -10,11 +10,11 @@ export async function findBlockAtHeightAndPreviousBlock(account: string, height:
   const blocks = [];
 
   for await (const block of nanoBackwardIterable) {
-    if (BigInt(block.height) == height) {
+    if (BigInt(block.height) === height) {
       blocks.push(block);
-    } else if (BigInt(block.height) == previousHeight) {
+    } else if (BigInt(block.height) === previousHeight) {
       blocks.unshift(block)
-      if (blocks.length == 2) {
+      if (blocks.length === 2) {
         return blocks as [INanoBlock, INanoBlock];
       } else {
         return undefined;

@@ -6,7 +6,7 @@ export async function findReceiveBlock(senderAccount: string, sendHash: string, 
   await nanoBackwardIterable.initialize();
 
   for await (const block of nanoBackwardIterable) {
-    if (block.type == 'state' && block.subtype === 'receive' && block.link == sendHash) {
+    if (block.type === 'state' && block.subtype === 'receive' && block.link === sendHash) {
       return block;
     }
   }

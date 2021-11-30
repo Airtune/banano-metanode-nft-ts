@@ -5,8 +5,9 @@ export async function findBlockAtHeight(account: string, height: bigint): Promis
   const nanoBackwardIterable = new NanoAccountBackwardCrawler(this.nanoNode, account);
   await nanoBackwardIterable.initialize();
 
+  // TODO: Compare the `offset` parameter in the `account_history` RPC to the crawler
   for await (const block of nanoBackwardIterable) {
-    if (BigInt(block.height) == height) {
+    if (BigInt(block.height) === height) {
       return block;
     }
   }
