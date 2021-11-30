@@ -1,6 +1,8 @@
 export const META_NODE_VERSION = '0.0.0';
 export const META_PROTOCOL_VERSION = '0.1.0';
 
+export const NODE_RPC_URL = 'https://kaliumapi.appditto.com/api'
+
 export const BLOCK_HASH_PATTERN = /^[0-9A-F]{64}$/i;
 export const ADDRESS_PATTERN = /^ban_.+$/i
 
