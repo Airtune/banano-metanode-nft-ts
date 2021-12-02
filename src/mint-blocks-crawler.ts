@@ -4,7 +4,7 @@ import { NanoNode } from 'nano-account-crawler/dist/nano-node';
 import { bananoIpfs } from "./lib/banano-ipfs";
 import { parseFinishSupplyRepresentative, parseSupplyRepresentative } from "./block-parsers/supply";
 import { validateMintBlock } from "./block-validators/mint-block";
-import { CANCEL_SUPPLY_REPRESENTATIVE } from "./constants";
+import { CANCEL_SUPPLY_REPRESENTATIVE, MAX_RPC_ITERATIONS } from "./constants";
 
 // Crawler to find all mint blocks for a specific supply block
 export class MintBlocksCrawler {
@@ -28,6 +28,7 @@ export class MintBlocksCrawler {
   async crawl() {
     const banCrawler = new NanoAccountForwardCrawler(this._nanoNode, this._issuer, this._nftSupplyBlockHash);
     await banCrawler.initialize();
+    banCrawler.maxRpcIterations = MAX_RPC_ITERATIONS;
 
     this._mintBlocks = [];
     let blockOffset: number = 0;

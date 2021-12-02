@@ -3,7 +3,7 @@ import { NanoAccountBackwardCrawler } from "nano-account-crawler/dist/nano-accou
 import { NanoNode } from 'nano-account-crawler/dist/nano-node';
 
 import { parseSupplyRepresentative } from "./block-parsers/supply";
-import { CANCEL_SUPPLY_REPRESENTATIVE } from "./constants";
+import { CANCEL_SUPPLY_REPRESENTATIVE, MAX_RPC_ITERATIONS } from "./constants";
 
 // Crawler to find all mint blocks for a specific supply block
 export class SupplyBlocksCrawler {
@@ -18,6 +18,7 @@ export class SupplyBlocksCrawler {
   async crawl(): Promise<INanoBlock[]> {
     const banCrawler = new NanoAccountBackwardCrawler(this._nanoNode, this._issuer);
     await banCrawler.initialize();
+    banCrawler.maxRpcIterations = MAX_RPC_ITERATIONS;
 
     const supplyBlocks: INanoBlock[] = [];
     let followingBlock: INanoBlock = undefined;
