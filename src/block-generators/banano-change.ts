@@ -1,8 +1,9 @@
-import * as bananojs from '@bananocoin/bananojs';
+import { IBananoChange } from "../interfaces/banano-blocks"
+import { validateChangeBlockFormat } from "../block-validators/banano-change";
 
-// generate a change block without hash, work or signature
-export const generateBananoChangeBlock = async (account: string, representative: string, previous: string, balance: string) => {
-  const changeBlock = {
+// generate a change block without hash, work, and signature
+export const generateBananoChangeBlock = (account: string, representative: string, previous: string, balance: bigint): IBananoChange => {
+  const block: IBananoChange = {
     "type": "state",
     "account": account,
     "previous": previous,
@@ -10,8 +11,8 @@ export const generateBananoChangeBlock = async (account: string, representative:
     "balance": balance,
     "link": "0000000000000000000000000000000000000000000000000000000000000000"
   }
-}
 
-export const validateChangeBlock = async (block) => {
+  validateChangeBlockFormat(block);
 
+  return block;
 }

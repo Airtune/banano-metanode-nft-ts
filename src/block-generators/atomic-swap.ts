@@ -1,6 +1,7 @@
 import * as bananojs from '@bananocoin/bananojs';
 
 import { ATOMIC_SWAP_HEADER } from "../constants";
+import { findBlockAtHeight } from '../lib/find-block-at-height';
 import { toFixedLengthPositiveHex } from "../lib/to-fixed-length-positive-hex";
 
 // https://github.com/Airtune/73-meta-tokens/blob/main/meta_ledger_protocol/atomic_swap.md
@@ -18,20 +19,26 @@ export const generateSendAtomicSwapRepresentative = (assetHeight: bigint, receiv
 export const generateSendAtomicSwapBlock = async (sender: string, previous: string, recipient: string, assetHeight: bigint, receiveHeight: bigint, minRaw: bigint) => {
   const atomicSwapRepresentative = generateSendAtomicSwapRepresentative(assetHeight, receiveHeight, minRaw);
   const recipientPublicKey = bananojs.getAccountPublicKey(recipient);
-  const work = await bananojs.bananodeApi.getGeneratedWork(previous);
 
   return {
     "type": "state",
     "account": sender,
     "previous": previous,
     "representative": atomicSwapRepresentative,
-    "link": recipientPublicKey,
-    "work": work
+    "link": recipientPublicKey
   }
 }
 
-export const generateReceiveAtomicSwapBlock = async() => {
-
+export const generateReceiveAtomicSwapBlock = async (account: string, sendAtomicSwapBlockHash, receiveHeight: bigint) => {
+  const previousHeight: bigint = receiveHeight - BigInt("1");
+  const previousBlock = await findBlockAtHeight(account, previousHeight);
+  return {
+    "type": "state",
+    "account": account,
+    "previous": previousBlock.hash,
+    "representative": previousBlock.representative, // changing representative here cancels the atomic swap
+    "link": sendAtomicSwapBlockHash
+  }
 }
 
 export const generateAbortReceiveAtomicSwapBlock = async() => {
