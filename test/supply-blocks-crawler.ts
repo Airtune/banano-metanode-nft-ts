@@ -14,10 +14,18 @@ describe('SupplyBlocksCrawler', function() {
     const supplyBlocks = await supplyBlockCrawler.crawl();
   });
 
-  it("finds supply blocks with a mint block", async () => {
+  it("finds supply blocks followed by a mint block", async () => {
     throw Error("not implemented");
     const issuer = "ban_missing";
     const supplyBlockCrawler = new SupplyBlocksCrawler(bananode, issuer);
+  });
+
+  it("doesn't detect supply blocks with an unsupported version", async () => {
+    throw Error("not implemented");
+  });
+
+  it("doesn't detect supply blocks that doesn't match the header exactly", async () => {
+    throw Error("not implemented");
   });
 
   it("cancels #supply block if it's followed by another #supply block", async () => {

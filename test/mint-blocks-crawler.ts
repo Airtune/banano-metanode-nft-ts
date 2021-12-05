@@ -7,7 +7,7 @@ chai.use(chaiAsPromised);
 const expect = chai.expect;
 
 describe('MintBlocksCrawler', function() {
-  it("doesn't mint any assets if #supply block is the frontier of an account", async () => {
+  it("doesn't detect any mints if the #supply block is the frontier of an account", async () => {
     throw Error("not implemented");
   });
 
