@@ -1,4 +1,4 @@
-import { IBananoChange } from "../interfaces/banano-blocks"
+import { IBananoChange } from "../interfaces/banano-change"
 
 // Validates if it's the correct data format without checking if it would be valid on-chain.
 export const validateChangeBlockFormat = async (block: IBananoChange) => {

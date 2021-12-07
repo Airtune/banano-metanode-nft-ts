@@ -1,5 +1,5 @@
 import { ADDRESS_PATTERN, PUBLIC_KEY_PATTERN } from '../constants';
-import { IBananoSend } from '../interfaces/banano-blocks';
+import { IBananoSend } from '../interfaces/banano-send';
 
 // Validates if it's the correct data format without checking if it would be valid on-chain.
 export const validateBananoSendBlockFormat = (block: IBananoSend) => {

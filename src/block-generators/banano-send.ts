@@ -1,4 +1,4 @@
-import { IBananoSend } from '../interfaces/banano-blocks';
+import { IBananoSend } from '../interfaces/banano-send';
 import { getPublicKey } from '../lib/get-public-key';
 import { validateBananoSendBlockFormat } from '../block-validators/banano-send';
 

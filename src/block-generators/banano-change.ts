@@ -1,4 +1,4 @@
-import { IBananoChange } from "../interfaces/banano-blocks"
+import { IBananoChange } from "../interfaces/banano-change"
 import { validateChangeBlockFormat } from "../block-validators/banano-change";
 
 // generate a change block without hash, work, and signature
