@@ -28,7 +28,7 @@ describe('SupplyBlocksCrawler', function() {
     throw Error("not implemented");
   });
 
-  it("cancels change#supply block if it's followed by a block with a supply representative", async () => {
+  it("cancels change#supply block if it's followed by a block with the supply representative header", async () => {
     throw Error("not implemented");
   });
 
