@@ -23,11 +23,27 @@ describe('AssetCrawler', function() {
     throw Error("not implemented");
   });
 
-  it("sends an asset from the send#mint block", async () => {
+  it("sends an asset from a valid send#mint block", async () => {
     throw Error("not implemented");
   });
 
-  it("cancels atomic swap if receive#atomic_swap block changes representative", async () => {
+  it("sends an asset from a valid send#asset block", async () => {
+    throw Error("not implemented");
+  });
+
+  it("receives an asset from a valid receive#mint block", async () => {
+    throw Error("not implemented");
+  });
+
+  it("receives an asset from a valid receive#asset block", async () => {
+    throw Error("not implemented");
+  });
+
+  it("can trace a long chain of sends", async () => {
+    throw Error("not implemented");
+  });
+
+  it("cancels atomic swap if receive#atomic_swap block has a different representative than previous block", async () => {
     // Todo: check if there's other variables that can change the block hash to break the atomic swap
     throw Error("not implemented");
   });

@@ -7,31 +7,35 @@ chai.use(chaiAsPromised);
 const expect = chai.expect;
 
 describe('MintBlocksCrawler', function() {
-  it("doesn't detect any mints if the #supply block is the frontier of an account", async () => {
+  it("doesn't detect any mints if the change#supply block is the frontier of an account", async () => {
     throw Error("not implemented");
   });
 
-  it("is unable to mint at a block height below the #supply block", async () => {
+  it("registers mints at block height above the change#supply block", async () => {
     throw Error("not implemented");
   });
 
-  it("is unable to mint after #finish_supply block is confirmed for unlimited supply", async () => {
+  it("doesn't register mints at block height below the change#supply block", async () => {
     throw Error("not implemented");
   });
 
-  it("is unable to mint after #finish_supply block is confirmed while still under max supply from #supply block", async () => {
+  it("doesn't register invalid mints after the change#finish_supply block for unlimited supply", async () => {
     throw Error("not implemented");
   });
 
-  it("is unable to mint after max supply has been exceeded", async () => {
+  it("doesn't register invalid mints after the change#finish_supply block even if mints are below max supply", async () => {
     throw Error("not implemented");
   });
 
-  it("is able to mint before max supply has been exceeded", async () => {
+  it("doesn't register invalid mints after max supply has been exceeded", async () => {
     throw Error("not implemented");
   });
 
-  it("is able to mint before max supply has been exceeded", async () => {
+  it("registers valid mints before max supply has been exceeded", async () => {
+    throw Error("not implemented");
+  });
+
+  it("is able to detect mints with infinite supply", async () => {
     throw Error("not implemented");
   });
 });
