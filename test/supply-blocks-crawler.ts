@@ -28,11 +28,19 @@ describe('SupplyBlocksCrawler', function() {
     throw Error("not implemented");
   });
 
-  it("cancels change#supply block if it's followed by a block with the supply representative header", async () => {
+  it("cancels change#supply block if it's followed by a block with a cancel_supply_representative", async () => {
     throw Error("not implemented");
   });
 
-  it("cancels change#supply block if it's followed by a block with a cancel supply representative", async () => {
+  it("cancels change#supply block if it's followed by a block with the supply_representative header", async () => {
+    throw Error("not implemented");
+  });
+
+  it("cancels change#supply block if it's followed by a block with the finished_supply_representative header", async () => {
+    throw Error("not implemented");
+  });
+
+  it("cancels change#supply block if it's followed by a block with the atomic_swap_representative header", async () => {
     throw Error("not implemented");
   });
 
