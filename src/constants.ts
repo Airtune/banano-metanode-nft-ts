@@ -4,6 +4,7 @@ export const META_PROTOCOL_MAJOR = BigInt('0');
 export const META_PROTOCOL_MINOR = BigInt('1');
 export const META_PROTOCOL_PATCH = BigInt('0');
 export const META_PROTOCOL_VERSION = `${META_PROTOCOL_MAJOR}.${META_PROTOCOL_MINOR}.${META_PROTOCOL_PATCH}`;
+export const META_PROTOCOL_SUPPORTED_VERSIONS = ["0.1.0"];
 
 // Settings
 export const NODE_RPC_URL = 'https://kaliumapi.appditto.com/api'
