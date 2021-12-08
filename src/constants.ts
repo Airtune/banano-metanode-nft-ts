@@ -29,6 +29,14 @@ export const FINISH_SUPPLY_HEX_PATTERN = RegExp(`^${FINISH_SUPPLY_HEADER}(?<supp
 // Representative used to cancel NFT supply block with a change block in place of the first mint block.
 export const CANCEL_SUPPLY_REPRESENTATIVE = 'ban_1nftsupp1ycance1111oops1111that1111was1111my1111bad1hq5sjhey';
 
+export const BURN_ACCOUNTS = [
+  "ban_1burnbabyburndiscoinferno111111111111111111111111111aj49sw3w", // official burn account
+  "ban_1uo1cano1bot1a1pha1616161616161616161616161616161616p3s5tifp", // banano walker burn account
+  "ban_1ban116su1fur16uo1cano16su1fur16161616161616161616166a1sf7xw", // volcano burn account
+  "ban_1111111111111111111111111111111111111111111111111111hifc8npp" // nano burn account
+]
+
+
 // Validators
 if (typeof ATOMIC_SWAP_HEADER !== "string" || ATOMIC_SWAP_HEADER.length !== 13 || !ATOMIC_SWAP_HEADER.match(HEX_PATTERN)) {
   throw Error(`ATOMIC_SWAP_HEADER must be 13 char hex`);

@@ -6,6 +6,7 @@ import { NanoAccountForwardCrawler } from "nano-account-crawler/dist/nano-accoun
 import { AssetCrawler } from "../asset-crawler";
 import { parseAtomicSwapRepresentative } from "../block-parsers/atomic-swap";
 import { IMetaBlock } from "../interfaces/meta-block";
+import { BURN_ACCOUNTS } from "../constants";
 
 export async function ownershipAddNextMetaBlock(assetCrawler: AssetCrawler): Promise<boolean> {
   // trace forward in account history from frontier block
@@ -14,10 +15,15 @@ export async function ownershipAddNextMetaBlock(assetCrawler: AssetCrawler): Pro
     assetCrawler.traceLength += BigInt(1);
 
     const metaBlock: IMetaBlock = toMetaBlock(assetCrawler, nanoBlock);
-    if (metaBlock == undefined) { continue; }
+    if (metaBlock === undefined) { continue; }
 
     assetCrawler.assetChain.push(metaBlock);
-    return true;
+
+    if (metaBlock.state === "burned") {
+      return false;
+    } else {
+      return true;
+    }
   }
 
   return false;
@@ -28,6 +34,18 @@ function toMetaBlock(assetCrawler: AssetCrawler, block: INanoBlock): (IMetaBlock
 
   if (block.subtype === 'send') {
     if (block.representative === assetCrawler.assetRepresentative) {
+      const recipient = block.account;
+      if (BURN_ACCOUNTS.includes(recipient)) {
+        return {
+          state: 'burned',
+          type: 'send#burn',
+          account: assetCrawler.frontier.account,
+          owner: block.account,
+          locked: false,
+          nanoBlock: block,
+          traceLength: assetCrawler.traceLength
+        }
+      }
       return {
         state: 'send',
         type: 'send#asset',
