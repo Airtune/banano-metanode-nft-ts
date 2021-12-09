@@ -1,6 +1,6 @@
 // interfaces
 import { INanoBlock } from "nano-account-crawler/dist/nano-interfaces";
-import { IMetaBlock } from "./interfaces/meta-block";
+import { IAssetBlock } from "./interfaces/asset-block";
 import { IAtomicSwapConditions } from "./interfaces/atomic-swap-conditions";
 
 // packages
@@ -15,22 +15,22 @@ import { MAX_TRACE_LENGTH } from "./constants";
 import { parseAtomicSwapRepresentative } from "./block-parsers/atomic-swap";
 
 // meta block states
-import { firstMintAddNextMetaBlocks } from "./asset-crawler-states/first-mint";
-import { ownershipAddNextMetaBlock } from "./asset-crawler-states/ownership";
-import { sendAddNextMetaBlock } from "./asset-crawler-states/send";
-import { sendAtomicSwapAddNextMetaBlock } from "./asset-crawler-states/send-atomic-swap";
-import { pendingAddNextMetaBlock } from "./asset-crawler-states/pending-atomic-swap";
+import { firstMintAddNextAssetBlocks } from "./asset-crawler-states/first-mint";
+import { ownershipAddNextAssetBlock } from "./asset-crawler-states/ownership";
+import { sendAddNextAssetBlock } from "./asset-crawler-states/send";
+import { sendAtomicSwapAddNextAssetBlock } from "./asset-crawler-states/send-atomic-swap";
+import { pendingPaymentAddNextAssetBlock } from "./asset-crawler-states/pending-payment";
 
-const addNextMetaBlockForState = {
-  "ownership": ownershipAddNextMetaBlock,
-  "send": sendAddNextMetaBlock,
-  "send_atomic_swap": sendAtomicSwapAddNextMetaBlock,
-  "pending_atomic_swap": pendingAddNextMetaBlock
+const addNextAssetBlockForState = {
+  "ownership": ownershipAddNextAssetBlock,
+  "send": sendAddNextAssetBlock,
+  "send_atomic_swap": sendAtomicSwapAddNextAssetBlock,
+  "pending_payment": pendingPaymentAddNextAssetBlock
 };
 
 // Crawler to trace the chain following a single mint of an asset.
 export class AssetCrawler {
-  private _assetChain: IMetaBlock[];
+  private _assetChain: IAssetBlock[];
   private _assetRepresentative: string;
   private _metadataRepresentative: string;
   private _issuer: string;
@@ -47,7 +47,7 @@ export class AssetCrawler {
   }
 
   async crawl() {
-    await firstMintAddNextMetaBlocks(this, this._mintBlock);
+    await firstMintAddNextAssetBlocks(this, this._mintBlock);
     this._assetRepresentative = bananoIpfs.publicKeyToAccount(this._mintBlock.hash);
     this._metadataRepresentative = this._mintBlock.representative;
     this._traceLength = BigInt(1);
@@ -60,10 +60,10 @@ export class AssetCrawler {
   }
 
   private async addNextFrontierToAssetChain(): Promise<boolean> {
-    const addNextMetaBlock = addNextMetaBlockForState[this.frontier.state];
+    const addNextAssetBlock = addNextAssetBlockForState[this.frontier.state];
 
-    if (typeof addNextMetaBlock == "function") {
-      return addNextMetaBlock(this);
+    if (typeof addNextAssetBlock == "function") {
+      return addNextAssetBlock(this);
     } else {
       throw Error(`UnhandledState: State: ${this.frontier.state} was not handled for block: ${this.frontier.nanoBlock.hash}`);
     }

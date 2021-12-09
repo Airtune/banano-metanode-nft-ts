@@ -1,7 +1,7 @@
 import { AssetCrawler } from "../asset-crawler";
 import { INanoBlock } from "nano-account-crawler/dist/nano-interfaces";
 
-export async function firstMintAddNextMetaBlocks(assetCrawler: AssetCrawler, _mintBlock: INanoBlock): Promise<boolean> {
+export async function firstMintAddNextAssetBlocks(assetCrawler: AssetCrawler, _mintBlock: INanoBlock): Promise<boolean> {
   if (_mintBlock.subtype == 'send' && _mintBlock.type === 'state') {
     assetCrawler.assetChain.push({
       state: 'send',

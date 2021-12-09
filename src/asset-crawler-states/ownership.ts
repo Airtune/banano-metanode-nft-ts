@@ -5,21 +5,21 @@ import { NanoAccountForwardCrawler } from "nano-account-crawler/dist/nano-accoun
 
 import { AssetCrawler } from "../asset-crawler";
 import { parseAtomicSwapRepresentative } from "../block-parsers/atomic-swap";
-import { IMetaBlock } from "../interfaces/meta-block";
+import { IAssetBlock, TAssetState, TAssetBlockType } from "../interfaces/asset-block";
 import { BURN_ACCOUNTS } from "../constants";
 
-export async function ownershipAddNextMetaBlock(assetCrawler: AssetCrawler): Promise<boolean> {
+export async function ownershipAddNextAssetBlock(assetCrawler: AssetCrawler): Promise<boolean> {
   // trace forward in account history from frontier block
   let frontierCrawler = new NanoAccountForwardCrawler(assetCrawler.nanoNode, assetCrawler.frontier.account, assetCrawler.frontier.nanoBlock.hash, "1");
   for await (const nanoBlock of frontierCrawler) {
     assetCrawler.traceLength += BigInt(1);
 
-    const metaBlock: IMetaBlock = toMetaBlock(assetCrawler, nanoBlock);
-    if (metaBlock === undefined) { continue; }
+    const assetBlock: IAssetBlock = toAssetBlock(assetCrawler, nanoBlock);
+    if (assetBlock === undefined) { continue; }
 
-    assetCrawler.assetChain.push(metaBlock);
+    assetCrawler.assetChain.push(assetBlock);
 
-    if (metaBlock.state === "burned") {
+    if (assetBlock.state === "burned") {
       return false;
     } else {
       return true;
@@ -29,26 +29,24 @@ export async function ownershipAddNextMetaBlock(assetCrawler: AssetCrawler): Pro
   return false;
 }
 
-function toMetaBlock(assetCrawler: AssetCrawler, block: INanoBlock): (IMetaBlock|undefined) {
+function toAssetBlock(assetCrawler: AssetCrawler, block: INanoBlock): (IAssetBlock|undefined) {
   if (block.type !== 'state') { return undefined; }
 
   if (block.subtype === 'send') {
     if (block.representative === assetCrawler.assetRepresentative) {
       const recipient = block.account;
+      let state: TAssetState;
+      let type: TAssetBlockType;
       if (BURN_ACCOUNTS.includes(recipient)) {
-        return {
-          state: 'burned',
-          type: 'send#burn',
-          account: assetCrawler.frontier.account,
-          owner: block.account,
-          locked: false,
-          nanoBlock: block,
-          traceLength: assetCrawler.traceLength
-        }
+        state = "burned";
+        type = "send#burn";
+      } else {
+        state = "send";
+        type = "send#asset";
       }
       return {
-        state: 'send',
-        type: 'send#asset',
+        state: state,
+        type: type,
         account: assetCrawler.frontier.account,
         owner: block.account,
         locked: false,

@@ -3,7 +3,7 @@ import { IAtomicSwapConditions } from "../interfaces/atomic-swap-conditions";
 import { parseAtomicSwapRepresentative } from "../block-parsers/atomic-swap";
 import { findBlockAtHeightAndPreviousBlock } from "../lib/find-block-at-height-and-previous-block";
 
-export async function sendAtomicSwapAddNextMetaBlock(assetCrawler: AssetCrawler): Promise<boolean> {
+export async function sendAtomicSwapAddNextAssetBlock(assetCrawler: AssetCrawler): Promise<boolean> {
   const sendAtomicSwap = assetCrawler.frontier;
   const sendAtomicSwapHash = sendAtomicSwap.nanoBlock.hash;
   const atomicSwapConditions: IAtomicSwapConditions = parseAtomicSwapRepresentative(sendAtomicSwap.nanoBlock.representative);
@@ -29,7 +29,7 @@ export async function sendAtomicSwapAddNextMetaBlock(assetCrawler: AssetCrawler)
 
   if (isReceive && receivesAtomicSwap && hasCorrectHeight && representativeUnchanged) {
     assetCrawler.assetChain.push({
-      state: 'pending_atomic_swap',
+      state: 'pending_payment',
       type: 'receive#atomic_swap',
       account: recipient,
       owner: sender,
