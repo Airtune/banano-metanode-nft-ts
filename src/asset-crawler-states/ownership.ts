@@ -8,6 +8,7 @@ import { parseAtomicSwapRepresentative } from "../block-parsers/atomic-swap";
 import { IAssetBlock, TAssetState, TAssetBlockType } from "../interfaces/asset-block";
 import { BURN_ACCOUNTS } from "../constants";
 
+// State for when the the block's account own the asset.
 export async function ownershipAddNextAssetBlock(assetCrawler: AssetCrawler): Promise<boolean> {
   // trace forward in account history from frontier block
   let frontierCrawler = new NanoAccountForwardCrawler(assetCrawler.nanoNode, assetCrawler.frontier.account, assetCrawler.frontier.nanoBlock.hash, "1");
@@ -59,7 +60,7 @@ function toAssetBlock(assetCrawler: AssetCrawler, block: INanoBlock): (IAssetBlo
     const ownershipBlockHeight = BigInt(assetCrawler.frontier.nanoBlock.height);
     if (atomicSwapConditions && atomicSwapConditions.assetHeight === ownershipBlockHeight) {
       return {
-        state: 'send_atomic_swap',
+        state: 'pending_atomic_swap',
         type: 'send#atomic_swap',
         account: assetCrawler.frontier.account,
         owner: assetCrawler.frontier.account,

@@ -20,6 +20,8 @@ export const ADDRESS_PATTERN = /^ban_[13]{1}[13456789abcdefghijkmnopqrstuwxyz]{5
 // https://github.com/Airtune/73-meta-tokens/blob/main/meta_ledger_protocol/atomic_swap.md
 export const ATOMIC_SWAP_HEADER = "23559C159E22C"; // must be 13 chars
 export const ATOMIC_SWAP_HEX_PATTERN = RegExp(`^${ATOMIC_SWAP_HEADER}(?<assetHeight>[0-9A-F]{10})(?<receiveHeight>[0-9A-F]{10})(?<minRaw>[0-9A-F]{31})$`, "i");
+export const ATOMIC_SWAP_DELEGATION_HEADER = "A3559C159E22C"; // must be 13 chars
+export const ATOMIC_SWAP_DELEGATION_HEX_PATTERN = RegExp(`^${ATOMIC_SWAP_DELEGATION_HEADER}(?<assetHeight>[0-9A-F]{10})(?<receiveHeight>[0-9A-F]{10})(?<minRaw>[0-9A-F]{31})$`, "i");
 
 // https://github.com/Airtune/73-meta-tokens/blob/main/meta_ledger_protocol/supply_block.md
 export const SUPPLY_HEX_HEADER = "51BACEED6078000000"; // must be 18 char hex

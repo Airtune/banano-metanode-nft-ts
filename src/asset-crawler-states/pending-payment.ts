@@ -6,6 +6,7 @@ import { AssetCrawler } from "../asset-crawler";
 import { parseAtomicSwapRepresentative } from "../block-parsers/atomic-swap";
 import { findBlockAtHeightAndPreviousBlock } from "../lib/find-block-at-height-and-previous-block";
 
+// State for when receive#atomic_swap is confirmed but send#payment hasn't been sent yet.
 export async function pendingPaymentAddNextAssetBlock(assetCrawler: AssetCrawler): Promise<boolean> {
   const paymentAccount = assetCrawler.frontier.account;
   const paymentHeight = BigInt(assetCrawler.frontier.nanoBlock.height) + BigInt(1);
@@ -16,8 +17,8 @@ export async function pendingPaymentAddNextAssetBlock(assetCrawler: AssetCrawler
   if (typeof nextBlock === 'undefined') {
     return false;
   }
-  if (sendAtomicSwap.state !== 'send_atomic_swap') {
-    throw Error(`UnexpectedMetaChain: Expected states of the chain to be send_atomic_swap -> pending_payment -> ... Got: ${sendAtomicSwap.state} -> ${assetCrawler.frontier.state} -> ...`);
+  if (sendAtomicSwap.state !== 'pending_atomic_swap') {
+    throw Error(`UnexpectedMetaChain: Expected states of the chain to be pending_atomic_swap -> pending_payment -> ... Got: ${sendAtomicSwap.state} -> ${assetCrawler.frontier.state} -> ...`);
   }
   // NB: Trace length from findBlockAtHeight might be significantly larger than 1.
   assetCrawler.traceLength += BigInt("1");
@@ -39,7 +40,7 @@ export async function pendingPaymentAddNextAssetBlock(assetCrawler: AssetCrawler
     });
   } else {
     // Atomic swap conditions were not met.
-    // Continue chain from send#atomic_swap again with state 'ownership' instead of state 'send_atomic_swap'.
+    // Continue chain from send#atomic_swap again with state 'ownership' instead of state 'pending_atomic_swap'.
     let type: TAssetBlockType;
     switch (nextBlock.subtype) {
       case "send":

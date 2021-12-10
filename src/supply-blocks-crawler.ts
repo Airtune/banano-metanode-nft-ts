@@ -2,16 +2,12 @@ import { INanoBlock } from "nano-account-crawler/dist/nano-interfaces";
 import { NanoAccountBackwardCrawler } from "nano-account-crawler/dist/nano-account-backward-crawler";
 import { NanoNode } from 'nano-account-crawler/dist/nano-node';
 
+import { accountDataType } from "./account-data-type";
 import { parseSupplyRepresentative } from "./block-parsers/supply";
 import {
-  ATOMIC_SWAP_HEX_PATTERN,
-  CANCEL_SUPPLY_REPRESENTATIVE,
-  FINISH_SUPPLY_HEX_PATTERN,
   MAX_RPC_ITERATIONS,
   META_PROTOCOL_SUPPORTED_VERSIONS,
-  SUPPLY_HEX_PATTERN
 } from "./constants";
-import { getPublicKey } from './lib/get-public-key';
 
 // Crawler to find all supply blocks by an issuer
 export class SupplyBlocksCrawler {
@@ -59,17 +55,9 @@ export class SupplyBlocksCrawler {
     if (block.representative === followedByBlock.representative) {
       return false;
     }
-    if (followedByBlock.representative === CANCEL_SUPPLY_REPRESENTATIVE) {
-      return false;
-    }
-    const followedRepresentativeHex = getPublicKey(followedByBlock.representative);
-    if (followedRepresentativeHex.match(SUPPLY_HEX_PATTERN)) {
-      return false;
-    }
-    if (followedRepresentativeHex.match(ATOMIC_SWAP_HEX_PATTERN)) {
-      return false;
-    }
-    if (followedRepresentativeHex.match(FINISH_SUPPLY_HEX_PATTERN)) {
+
+    // Mint block representative must not be special accounts or contain a data encoding header.
+    if (accountDataType(followedByBlock.representative) !== "unknown") {
       return false;
     }
 

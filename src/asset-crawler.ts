@@ -18,13 +18,13 @@ import { parseAtomicSwapRepresentative } from "./block-parsers/atomic-swap";
 import { firstMintAddNextAssetBlocks } from "./asset-crawler-states/first-mint";
 import { ownershipAddNextAssetBlock } from "./asset-crawler-states/ownership";
 import { sendAddNextAssetBlock } from "./asset-crawler-states/send";
-import { sendAtomicSwapAddNextAssetBlock } from "./asset-crawler-states/send-atomic-swap";
+import { pendingAtomicSwapAddNextAssetBlock } from "./asset-crawler-states/pending-atomic-swap";
 import { pendingPaymentAddNextAssetBlock } from "./asset-crawler-states/pending-payment";
 
 const addNextAssetBlockForState = {
   "ownership": ownershipAddNextAssetBlock,
   "send": sendAddNextAssetBlock,
-  "send_atomic_swap": sendAtomicSwapAddNextAssetBlock,
+  "pending_atomic_swap": pendingAtomicSwapAddNextAssetBlock,
   "pending_payment": pendingPaymentAddNextAssetBlock
 };
 
@@ -65,7 +65,7 @@ export class AssetCrawler {
     if (typeof addNextAssetBlock == "function") {
       return addNextAssetBlock(this);
     } else {
-      throw Error(`UnhandledState: State: ${this.frontier.state} was not handled for block: ${this.frontier.nanoBlock.hash}`);
+      throw Error(`UnhandledAssetState: "${this.frontier.state}" was not handled for block: ${this.frontier.nanoBlock.hash}`);
     }
   }
 
