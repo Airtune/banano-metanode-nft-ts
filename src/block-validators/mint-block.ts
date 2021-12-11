@@ -1,8 +1,13 @@
 import * as bananojs from '@bananocoin/bananojs';
 import { INanoBlock } from "nano-account-crawler/dist/nano-interfaces";
 import { SUPPLY_HEX_PATTERN } from "../constants";
+import { accountDataType } from "../account-data-type";
 
 function validateMintRepresentative(block: INanoBlock) {
+  const representativeType = accountDataType(block.representative);
+  if (representativeType !== "unknown") {
+    throw Error(`UnexpectedMintRepresentative: Expected representative to encode IPFS CID. Got type: ${representativeType} for ${block.representative}`);
+  }
   const representativeHex = bananojs.getAccountPublicKey(block.representative);
 
   if (representativeHex.match(SUPPLY_HEX_PATTERN)) {
