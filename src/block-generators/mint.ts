@@ -1,6 +1,4 @@
 import * as bananojs from '@bananocoin/bananojs';
-import { generateBananoSendBlock } from './banano-send';
-import { getAccountInfo } from '../lib/get-account-info';
 import { generateSendAssetBlock } from './send';
 
 
