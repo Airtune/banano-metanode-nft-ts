@@ -1,23 +1,24 @@
 import * as bananojs from '@bananocoin/bananojs';
 
-import { ATOMIC_SWAP_HEADER } from "../constants";
+import { ATOMIC_SWAP_DELEGATION_HEADER, ATOMIC_SWAP_HEADER } from "../constants";
 import { findBlockAtHeight } from '../lib/find-block-at-height';
 import { toFixedLengthPositiveHex } from "../lib/to-fixed-length-positive-hex";
 
 // https://github.com/Airtune/73-meta-tokens/blob/main/meta_ledger_protocol/atomic_swap.md
-export const generateSendAtomicSwapRepresentative = (assetHeight: bigint, receiveHeight: bigint, minRaw: bigint) => {
+export const generateSendAtomicSwapRepresentative = (assetHeight: bigint, receiveHeight: bigint, minRaw: bigint, delegation: boolean = false) => {
   const assetHeightHex   = toFixedLengthPositiveHex(assetHeight, 10);
   const receiveHeightHex = toFixedLengthPositiveHex(receiveHeight, 10);
   const minRawHex        = toFixedLengthPositiveHex(minRaw, 31);
+  const header: string   = delegation ? ATOMIC_SWAP_DELEGATION_HEADER : ATOMIC_SWAP_HEADER;
 
-  const atomicSwapRepresentativeHex = `${ATOMIC_SWAP_HEADER}${assetHeightHex}${receiveHeightHex}${minRawHex}`;
+  const atomicSwapRepresentativeHex = `${header}${assetHeightHex}${receiveHeightHex}${minRawHex}`;
   const atomicSwapRepresentative = bananojs.getBananoAccount(atomicSwapRepresentativeHex);
 
   return atomicSwapRepresentative;
 }
 
-export const generateSendAtomicSwapBlock = async (sender: string, previous: string, recipient: string, assetHeight: bigint, receiveHeight: bigint, minRaw: bigint) => {
-  const atomicSwapRepresentative = generateSendAtomicSwapRepresentative(assetHeight, receiveHeight, minRaw);
+export const generateSendAtomicSwapBlock = async (sender: string, previous: string, recipient: string, assetHeight: bigint, receiveHeight: bigint, minRaw: bigint, delegation: boolean = false) => {
+  const atomicSwapRepresentative = generateSendAtomicSwapRepresentative(assetHeight, receiveHeight, minRaw, delegation);
   const recipientPublicKey = bananojs.getAccountPublicKey(recipient);
 
   return {
