@@ -1,34 +1,14 @@
 import * as bananojs from '@bananocoin/bananojs';
+import { generateBananoChangeBlock } from './banano-change';
 import { generateSendAssetBlock } from './send';
 
-
 // https://github.com/Airtune/73-meta-tokens/blob/main/meta_ledger_protocol/mint_blocks.md
-export const generateMintAndSendBlock = async (metadataRepresentative: string, sender: string, recipient: string) => {
+export const generateMintAndSendBlock = (metadataRepresentative: string, sender: string, recipient: string, previous: string, balanceRaw: bigint) => {
 
   //The following implements the send block creation. Still need to implement the mint (changesupply & change#mintassets)
-  const sendblock = await generateSendAssetBlock(metadataRepresentative, sender, recipient);
-  const mintblock = null;
-  return [sendblock, mintblock];
-
-  const sendRaw = "1";
-  const representative = metadataRepresentative;
-  const recipientPublicKey = bananojs.getAccountPublicKey(recipient);
-  const balance = BigInt(balanceRaw) - BigInt(sendRaw);
-  const work = await bananojs.bananodeApi.getGeneratedWork(previous);
-
-  return generateBananoSendBlock(BigInt("1"), representative, sender, recipient);
-
-  return {
-    "type": "state",
-    "account": sender,
-    "previous": previous,
-    "representative": representative,
-    "balance": balance,
-    "link": recipientPublicKey,
-    "work": work
-  }
+  return generateSendAssetBlock(metadataRepresentative, sender, recipient, previous, balanceRaw);
 }
 
-export const generateMintAndKeepBlock = (metadataRepresentative: string) => {
-
+export const generateMintAndKeepBlock = (metadataRepresentative: string, minterAccount: string, previous: string, balance: bigint) => {
+  return generateBananoChangeBlock(minterAccount, metadataRepresentative, previous, balance);
 }

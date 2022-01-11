@@ -10,10 +10,10 @@ import { generateBananoChangeBlock } from "./banano-change";
 
 // Specification:
 // https://github.com/Airtune/73-meta-tokens/blob/main/meta_ledger_protocol/supply_block.md
-export const generateSupplyBlock = (account: string, previous: string, balance: string, maxSupply: bigint) => {
+export const generateSupplyBlock = (account: string, previous: string, balanceRaw: bigint, maxSupply: bigint) => {
   const supplyRepresentative = generateSupplyRepresentative(maxSupply);
 
-  return generateBananoChangeBlock(account, supplyRepresentative, previous, balance);
+  return generateBananoChangeBlock(account, supplyRepresentative, previous, balanceRaw);
 }
 
 // Specification:
