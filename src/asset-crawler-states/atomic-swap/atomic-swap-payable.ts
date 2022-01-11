@@ -1,10 +1,10 @@
 import { INanoBlock } from "nano-account-crawler/dist/nano-interfaces";
-import { IAtomicSwapConditions } from "../interfaces/atomic-swap-conditions";
-import { TAssetBlockType } from "../interfaces/asset-block";
+import { IAtomicSwapConditions } from "../../interfaces/atomic-swap-conditions";
+import { TAssetBlockType } from "../../types/asset-block-type";
 
-import { AssetCrawler } from "../asset-crawler";
-import { parseAtomicSwapRepresentative } from "../block-parsers/atomic-swap";
-import { findBlockAtHeightAndPreviousBlock } from "../lib/find-block-at-height-and-previous-block";
+import { AssetCrawler } from "../../asset-crawler";
+import { parseAtomicSwapRepresentative } from "../../block-parsers/atomic-swap";
+import { findBlockAtHeightAndPreviousBlock } from "../../lib/find-block-at-height-and-previous-block";
 
 // State for when receive#atomic_swap is confirmed but send#payment hasn't been sent yet.
 export async function pendingPaymentAddNextAssetBlock(assetCrawler: AssetCrawler): Promise<boolean> {
@@ -30,7 +30,7 @@ export async function pendingPaymentAddNextAssetBlock(assetCrawler: AssetCrawler
 
   if (nextBlock.subtype === 'send' && payedCorrectAccount && payedEnough && representativeUnchanged) {
     assetCrawler.assetChain.push({
-      state: 'ownership',
+      state: 'owned',
       type: 'send#payment',
       account: assetCrawler.frontier.account,
       owner: assetCrawler.frontier.account,
@@ -40,7 +40,7 @@ export async function pendingPaymentAddNextAssetBlock(assetCrawler: AssetCrawler
     });
   } else {
     // Atomic swap conditions were not met.
-    // Continue chain from send#atomic_swap again with state 'ownership' instead of state 'pending_atomic_swap'.
+    // Continue chain from send#atomic_swap again with state 'owned' instead of state 'pending_atomic_swap'.
     let type: TAssetBlockType;
     switch (nextBlock.subtype) {
       case "send":
@@ -62,7 +62,7 @@ export async function pendingPaymentAddNextAssetBlock(assetCrawler: AssetCrawler
       traceLength: assetCrawler.traceLength
     });
     assetCrawler.assetChain.push({
-      state: 'ownership',
+      state: 'owned',
       type: 'send#atomic_swap',
       account: sendAtomicSwap.account,
       owner: sendAtomicSwap.account,

@@ -15,17 +15,25 @@ import { MAX_TRACE_LENGTH } from "./constants";
 import { parseAtomicSwapRepresentative } from "./block-parsers/atomic-swap";
 
 // meta block states
-import { firstMintAddNextAssetBlocks } from "./asset-crawler-states/first-mint";
-import { ownershipAddNextAssetBlock } from "./asset-crawler-states/ownership";
-import { sendAddNextAssetBlock } from "./asset-crawler-states/send";
-import { pendingAtomicSwapAddNextAssetBlock } from "./asset-crawler-states/pending-atomic-swap";
-import { pendingPaymentAddNextAssetBlock } from "./asset-crawler-states/pending-payment";
+import { firstMintAddNextAssetBlocks } from "./asset-crawler-states/asset/first-mint";
+import { ownedAddNextAssetBlock } from "./asset-crawler-states/asset/owned";
+import { receivableAddNextAssetBlock } from "./asset-crawler-states/asset/receivable";
+import { atomicSwapReceivableAddNextAssetBlock } from "./asset-crawler-states/atomic-swap/atomic-swap-receivable";
+import { pendingPaymentAddNextAssetBlock } from "./asset-crawler-states/atomic-swap/atomic-swap-payable";
+import { pendingDelegationAddNextAssetBlock } from "./asset-crawler-states/delegation/delegation-receivable";
+import { delegatedAddNextAssetBlock } from "./asset-crawler-states/delegation/delegated";
+import { delegatedAtomicSwapReceivableAddNextAssetBlock } from "./asset-crawler-states/delegation/delegated-atomic-swap-receivable";
+import { delegatedAtomicSwapPayableAddNextAssetBlock } from "./asset-crawler-states/delegation/delegated-atomic-swap-payable";
 
 const addNextAssetBlockForState = {
-  "ownership": ownershipAddNextAssetBlock,
-  "send": sendAddNextAssetBlock,
-  "pending_atomic_swap": pendingAtomicSwapAddNextAssetBlock,
-  "pending_payment": pendingPaymentAddNextAssetBlock
+  "owned": ownedAddNextAssetBlock,
+  "receivable": receivableAddNextAssetBlock,
+  "atomic_swap_receivable": atomicSwapReceivableAddNextAssetBlock,
+  "atomic_swap_payable": pendingPaymentAddNextAssetBlock,
+  "delegation_receivable": pendingDelegationAddNextAssetBlock,
+  "delegated": delegatedAddNextAssetBlock,
+  "delegated_atomic_swap_receivable": delegatedAtomicSwapReceivableAddNextAssetBlock,
+  "delegated_atomic_swap_payable": delegatedAtomicSwapPayableAddNextAssetBlock
 };
 
 // Crawler to trace the chain following a single mint of an asset.
@@ -37,6 +45,12 @@ export class AssetCrawler {
   private _mintBlock: INanoBlock;
   private _nanoNode: NanoNode;
   private _traceLength: bigint;
+
+  public activeAtomicSwap: IAssetBlock;
+  public activeAtomicSwapDelegation: IAssetBlock;
+  public owner: string;
+  public locked: boolean;
+  public lockedInAccount: string;
 
   constructor(nanoNode: NanoNode, issuer: string, mintBlock: INanoBlock) {
     this._issuer = issuer;

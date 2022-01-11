@@ -1,15 +1,24 @@
+// dependencies
 import { INanoBlock } from "nano-account-crawler/dist/nano-interfaces";
-import { IAtomicSwapConditions } from "../interfaces/atomic-swap-conditions";
-
 import { NanoAccountForwardCrawler } from "nano-account-crawler/dist/nano-account-forward-crawler";
 
-import { AssetCrawler } from "../asset-crawler";
-import { parseAtomicSwapRepresentative } from "../block-parsers/atomic-swap";
-import { IAssetBlock, TAssetState, TAssetBlockType } from "../interfaces/asset-block";
-import { BURN_ACCOUNTS } from "../constants";
+// interfaces
+import { IAssetBlock } from "../../interfaces/asset-block";
+import { IAtomicSwapConditions } from "../../interfaces/atomic-swap-conditions";
+
+// types
+import { TAssetState } from "../../types/asset-state";
+import { TAssetBlockType } from "../../types/asset-block-type";
+
+// constants
+import { BURN_ACCOUNTS } from "../../constants";
+
+// src
+import { AssetCrawler } from "../../asset-crawler";
+import { parseAtomicSwapRepresentative } from "../../block-parsers/atomic-swap";
 
 // State for when the the block's account own the asset.
-export async function ownershipAddNextAssetBlock(assetCrawler: AssetCrawler): Promise<boolean> {
+export async function ownedAddNextAssetBlock(assetCrawler: AssetCrawler): Promise<boolean> {
   // trace forward in account history from frontier block
   let frontierCrawler = new NanoAccountForwardCrawler(assetCrawler.nanoNode, assetCrawler.frontier.account, assetCrawler.frontier.nanoBlock.hash, "1");
   for await (const nanoBlock of frontierCrawler) {
@@ -19,12 +28,7 @@ export async function ownershipAddNextAssetBlock(assetCrawler: AssetCrawler): Pr
     if (assetBlock === undefined) { continue; }
 
     assetCrawler.assetChain.push(assetBlock);
-
-    if (assetBlock.state === "burned") {
-      return false;
-    } else {
-      return true;
-    }
+    return true;
   }
 
   return false;
@@ -42,7 +46,7 @@ function toAssetBlock(assetCrawler: AssetCrawler, block: INanoBlock): (IAssetBlo
         state = "burned";
         type = "send#burn";
       } else {
-        state = "send";
+        state = "receivable";
         type = "send#asset";
       }
       return {
@@ -60,7 +64,7 @@ function toAssetBlock(assetCrawler: AssetCrawler, block: INanoBlock): (IAssetBlo
     const ownershipBlockHeight = BigInt(assetCrawler.frontier.nanoBlock.height);
     if (atomicSwapConditions && atomicSwapConditions.assetHeight === ownershipBlockHeight) {
       return {
-        state: 'pending_atomic_swap',
+        state: 'atomic_swap_receivable',
         type: 'send#atomic_swap',
         account: assetCrawler.frontier.account,
         owner: assetCrawler.frontier.account,

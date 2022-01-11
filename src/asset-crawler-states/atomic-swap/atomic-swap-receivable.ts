@@ -4,7 +4,7 @@ import { parseAtomicSwapRepresentative } from "../block-parsers/atomic-swap";
 import { findBlockAtHeightAndPreviousBlock } from "../lib/find-block-at-height-and-previous-block";
 
 // State for when send#atomic_swap is confirmed and receive#atomic_swap is ready to be received but hasn't been confirmed yet.
-export async function pendingAtomicSwapAddNextAssetBlock(assetCrawler: AssetCrawler): Promise<boolean> {
+export async function atomicSwapReceivableAddNextAssetBlock(assetCrawler: AssetCrawler): Promise<boolean> {
   const sendAtomicSwap = assetCrawler.frontier;
   const sendAtomicSwapHash = sendAtomicSwap.nanoBlock.hash;
   const atomicSwapConditions: IAtomicSwapConditions = parseAtomicSwapRepresentative(sendAtomicSwap.nanoBlock.representative);
@@ -50,7 +50,7 @@ export async function pendingAtomicSwapAddNextAssetBlock(assetCrawler: AssetCraw
       traceLength: assetCrawler.traceLength
     });
     assetCrawler.assetChain.push({
-      state: 'ownership',
+      state: 'owned',
       type: 'send#atomic_swap',
       account: sendAtomicSwap.account,
       owner: sendAtomicSwap.account,

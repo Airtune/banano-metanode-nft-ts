@@ -1,7 +1,7 @@
-import { findReceiveBlock } from "../lib/find-receive-block";
-import { AssetCrawler } from "../asset-crawler";
+import { findReceiveBlock } from "../../lib/find-receive-block";
+import { AssetCrawler } from "../../asset-crawler";
 
-export async function sendAddNextAssetBlock(assetCrawler: AssetCrawler): Promise<boolean> {
+export async function receivableAddNextAssetBlock(assetCrawler: AssetCrawler): Promise<boolean> {
   const sendBlockHash = assetCrawler.frontier.nanoBlock.hash;
   const recipient = assetCrawler.frontier.nanoBlock.account;
   const receiveBlock = await findReceiveBlock(assetCrawler.frontier.account, sendBlockHash, recipient);
@@ -12,7 +12,7 @@ export async function sendAddNextAssetBlock(assetCrawler: AssetCrawler): Promise
 
   if (receiveBlock.subtype === 'receive' && receiveBlock.link === sendBlockHash) {
     assetCrawler.assetChain.push({
-      state: 'ownership',
+      state: 'owned',
       type: 'receive#asset',
       account: recipient,
       owner: recipient,
