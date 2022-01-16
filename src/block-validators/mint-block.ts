@@ -1,4 +1,4 @@
-import * as bananojs from '@bananocoin/bananojs';
+import * as bananojs from "@bananocoin/bananojs";
 import { INanoBlock } from "nano-account-crawler/dist/nano-interfaces";
 import { SUPPLY_HEX_PATTERN } from "../constants";
 import { accountDataType } from "../account-data-type";

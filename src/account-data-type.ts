@@ -1,3 +1,7 @@
+// types
+import { TAccount } from "./types/banano";
+
+// src
 import {
   ATOMIC_SWAP_DELEGATION_HEX_PATTERN,
   ATOMIC_SWAP_HEX_PATTERN,
@@ -6,10 +10,9 @@ import {
   FINISH_SUPPLY_HEX_PATTERN,
   SUPPLY_HEX_PATTERN
 } from "./constants";
+import { getBananoAccountPublicKey } from "./lib/get-banano-account-public-key";
 
-import { getPublicKey } from "./lib/get-public-key";
-
-export const accountDataType = (account: string): string => {
+export const accountDataType = (account: TAccount): string => {
   // Match against special case accounts
   if (account === CANCEL_SUPPLY_REPRESENTATIVE) {
     return "cancel_supply_representative";
@@ -19,7 +22,7 @@ export const accountDataType = (account: string): string => {
   }
 
   // Match against hex patterns for encoded data.
-  const publicKeyHex = getPublicKey(account);
+  const publicKeyHex = getBananoAccountPublicKey(account);
   if (publicKeyHex.match(SUPPLY_HEX_PATTERN)) {
     return "supply";
   }

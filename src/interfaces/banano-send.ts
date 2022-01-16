@@ -1,8 +1,6 @@
-export interface IBananoSend {
-  type: "state",
-  account: string,
-  previous: string,
-  representative: string,
-  balance: bigint,
-  link: string
+import { TPublicKey } from "../types/banano";
+import { IBananoBlock } from "./banano-block";
+
+export interface IBananoSend extends IBananoBlock {
+  link: TPublicKey
 };

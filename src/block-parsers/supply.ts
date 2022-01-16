@@ -1,8 +1,10 @@
-import * as bananojs from '@bananocoin/bananojs';
+import * as bananojs from "@bananocoin/bananojs";
 import { SUPPLY_HEX_PATTERN, FINISH_SUPPLY_HEX_PATTERN } from "../constants";
+import { getBananoAccountPublicKey } from "../lib/get-banano-account-public-key";
+import { TAccount } from "../types/banano";
 
-export function parseSupplyRepresentative(representative): { version: string, maxSupply: bigint } {
-  const supplyHex = bananojs.getAccountPublicKey(representative);
+export function parseSupplyRepresentative(representative: TAccount): { version: string, maxSupply: bigint } {
+  const supplyHex = getBananoAccountPublicKey(representative);
   const match = supplyHex.match(SUPPLY_HEX_PATTERN);
   if (!match) { return undefined; }
 
@@ -19,8 +21,8 @@ export function parseSupplyRepresentative(representative): { version: string, ma
   }
 }
 
-export function parseFinishSupplyRepresentative(representative): { supplyBlockHeight: bigint } {
-  const finishSupplyHex = bananojs.getAccountPublicKey(representative);
+export function parseFinishSupplyRepresentative(representative: TAccount): { supplyBlockHeight: bigint } {
+  const finishSupplyHex = getBananoAccountPublicKey(representative);
   const match = finishSupplyHex.match(FINISH_SUPPLY_HEX_PATTERN);
   if (!match) { return undefined; }
 

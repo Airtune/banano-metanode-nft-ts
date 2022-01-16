@@ -13,8 +13,9 @@ export const MAX_TRACE_LENGTH = BigInt(690_000); // Trace length is an arbitrary
 
 // Patterns
 export const HEX_PATTERN = /^[0-9A-F]+$/i;
-export const BLOCK_HASH_PATTERN = /^[0-9A-F]{64}$/i;
-export const PUBLIC_KEY_PATTERN = /^[0-9A-F]{64}$/i;
+export const BLOCK_HASH_PATTERN  = /^[0-9A-F]{64}$/i;
+export const PUBLIC_KEY_PATTERN  = /^[0-9A-F]{64}$/i;
+export const PRIVATE_KEY_PATTERN = /^[0-9A-F]{64}$/i;
 export const ADDRESS_PATTERN = /^ban_[13]{1}[13456789abcdefghijkmnopqrstuwxyz]{59}$/
 
 // https://github.com/Airtune/73-meta-tokens/blob/main/meta_ledger_protocol/atomic_swap.md
@@ -56,6 +57,6 @@ if (typeof CANCEL_SUPPLY_REPRESENTATIVE !== "string" || CANCEL_SUPPLY_REPRESENTA
   throw Error(`CANCEL_SUPPLY_REPRESENTATIVE must be a valid Banano address`);
 }
 
-import * as bananojs from '@bananocoin/bananojs';
+import * as bananojs from "@bananocoin/bananojs";
 // throws error on invalid checksum
 bananojs.getAccountPublicKey(CANCEL_SUPPLY_REPRESENTATIVE);

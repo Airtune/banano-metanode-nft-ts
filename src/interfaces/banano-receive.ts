@@ -1,8 +1,6 @@
-export interface IBananoReceive {
-  type: "state",
-  account: string,
-  previous: string,
-  representative: string,
-  balance: bigint,
-  link: string
+import { TBlockHash } from "../types/banano";
+import { IBananoBlock } from "./banano-block";
+
+export interface IBananoReceive extends IBananoBlock {
+  link: TBlockHash
 };

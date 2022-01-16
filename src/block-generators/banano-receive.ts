@@ -1,7 +1,8 @@
 import { validateBananoReceiveBlockFormat } from '../block-validators/banano-receive';
+import { TAccount, TBlockHash } from '../types/banano';
 
-// Generates Banano receive block without hash, work, and signature
-export const generateBananoReceiveBlock = async (account: string, balance: bigint, link: string, representative: string, previous: string) => {
+// Generates Banano receive block without work, and signature
+export const generateBananoReceiveBlock = async (account: TAccount, balance: bigint, link: TBlockHash, representative: string, previous: TBlockHash) => {
   const block = {
     "type": "state",
     "account": account,
