@@ -2,16 +2,18 @@ import * as bananojs from "@bananocoin/bananojs";
 import { INanoBlock } from "nano-account-crawler/dist/nano-interfaces";
 import { SUPPLY_HEX_PATTERN } from "../constants";
 import { accountDataType } from "../account-data-type";
+import { TAccount } from "../types/banano";
 
 function validateMintRepresentative(block: INanoBlock) {
-  const representativeType = accountDataType(block.representative);
+  const representative = block.representative as TAccount;
+  const representativeType = accountDataType(representative);
   if (representativeType !== "unknown") {
-    throw Error(`UnexpectedMintRepresentative: Expected representative to encode IPFS CID. Got type: ${representativeType} for ${block.representative}`);
+    throw Error(`UnexpectedMintRepresentative: Expected representative to encode IPFS CID. Got type: ${representativeType} for ${representative}`);
   }
-  const representativeHex = bananojs.getAccountPublicKey(block.representative);
+  const representativeHex = bananojs.getAccountPublicKey(representative);
 
   if (representativeHex.match(SUPPLY_HEX_PATTERN)) {
-    throw Error(`MintBlockError: Expected metadataRepresentative encoded from IPFS CID. Got nftSupplyRepresentative: ${block.representative}`);
+    throw Error(`MintBlockError: Expected metadataRepresentative encoded from IPFS CID. Got nftSupplyRepresentative: ${representative}`);
   }
 }
 

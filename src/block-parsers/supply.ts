@@ -1,4 +1,3 @@
-import * as bananojs from "@bananocoin/bananojs";
 import { SUPPLY_HEX_PATTERN, FINISH_SUPPLY_HEX_PATTERN } from "../constants";
 import { getBananoAccountPublicKey } from "../lib/get-banano-account-public-key";
 import { TAccount } from "../types/banano";

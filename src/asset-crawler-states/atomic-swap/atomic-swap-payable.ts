@@ -5,6 +5,7 @@ import { TAssetBlockType } from "../../types/asset-block-type";
 import { AssetCrawler } from "../../asset-crawler";
 import { parseAtomicSwapRepresentative } from "../../block-parsers/atomic-swap";
 import { findBlockAtHeightAndPreviousBlock } from "../../lib/find-block-at-height-and-previous-block";
+import { TAccount } from "../../types/banano";
 
 // State for when receive#atomic_swap is confirmed but send#payment hasn't been sent yet.
 export async function pendingPaymentAddNextAssetBlock(assetCrawler: AssetCrawler): Promise<boolean> {
@@ -17,13 +18,14 @@ export async function pendingPaymentAddNextAssetBlock(assetCrawler: AssetCrawler
   if (typeof nextBlock === 'undefined') {
     return false;
   }
-  if (sendAtomicSwap.state !== 'pending_atomic_swap') {
+  if (sendAtomicSwap.state !== 'atomic_swap_receivable') {
     throw Error(`UnexpectedMetaChain: Expected states of the chain to be pending_atomic_swap -> pending_payment -> ... Got: ${sendAtomicSwap.state} -> ${assetCrawler.frontier.state} -> ...`);
   }
   // NB: Trace length from findBlockAtHeight might be significantly larger than 1.
   assetCrawler.traceLength += BigInt("1");
 
-  const atomicSwapConditions: IAtomicSwapConditions = parseAtomicSwapRepresentative(sendAtomicSwap.nanoBlock.representative);
+  const representative = sendAtomicSwap.nanoBlock.representative as TAccount;
+  const atomicSwapConditions: IAtomicSwapConditions = parseAtomicSwapRepresentative(representative);
   const payedEnough = BigInt(nextBlock.amount) >= atomicSwapConditions.minRaw;
   const payedCorrectAccount = nextBlock.account === sendAtomicSwap.account;
   const representativeUnchanged = nextBlock.representative === previousBlock.representative;
@@ -46,14 +48,14 @@ export async function pendingPaymentAddNextAssetBlock(assetCrawler: AssetCrawler
       case "send":
       case "receive":
       case "change":
-        type = `${nextBlock.subtype}#cancel_atomic_swap`;
+        type = `${nextBlock.subtype}#abort_payment`;
         break;
     
       default:
         throw Error(`UnexpectedBlockSubtype: Pending atomic swap got unexpected block subtype: ${nextBlock.subtype} with block hash: ${nextBlock.hash}`);
     }
     assetCrawler.assetChain.push({
-      state: 'cancel_atomic_swap',
+      state: "(return_to_nft_seller)",
       type: type,
       account: assetCrawler.frontier.account,
       owner: sendAtomicSwap.account,
@@ -62,8 +64,8 @@ export async function pendingPaymentAddNextAssetBlock(assetCrawler: AssetCrawler
       traceLength: assetCrawler.traceLength
     });
     assetCrawler.assetChain.push({
-      state: 'owned',
-      type: 'send#atomic_swap',
+      state: "owned",
+      type: "send#atomic_swap", // essentially ignored because state is owned
       account: sendAtomicSwap.account,
       owner: sendAtomicSwap.account,
       locked: false,

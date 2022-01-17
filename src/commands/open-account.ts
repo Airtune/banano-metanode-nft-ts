@@ -1,19 +1,22 @@
-// interfaces
-import { IBananoProcessResponse } from "../interfaces/banano-process-response";
+// types
+import { TAccount, TBlockHash, TPublicKey } from "../types/banano";
 
 // src
 import { config } from "../config";
-import { bananode } from "../bananode";
 import { generateBananoReceiveBlock } from "../block-generators/banano-receive";
 import { safeGetAccountInfo } from "../lib/get-account-info";
 import { getBananoReceivable } from "../lib/get-banano-receivable";
 import { getBlockInfo } from "../lib/get-block-info";
-import { AccountState } from "../account-state";
-import { TAccount, TBlockHash, TPublicKey } from "../types/banano";
+import { AccountCache } from "../account-cache";
 import { getPublicKey } from "../lib/get-public-key";
 import { getBananoAccount } from "../lib/get-banano-account";
+import { processBlock } from "../lib/process-block";
+import { generateWork } from "../lib/generate-work";
+import { generateSignature } from "../lib/generate-signature";
 
-export const bananoOpen = async (accountState: AccountState, privateKey: string): Promise<TBlockHash> => {
+// Open account command to find receivable, generate the open block, sign it, generate work,
+// and finally process it on the Banano ledger.
+export const openAccountCmd = async (privateKey: string): Promise<{ openBlockHash: TBlockHash, openAccountCache: AccountCache }> => {
   const publicKey: TPublicKey = getPublicKey(privateKey);
   const account: TAccount     = getBananoAccount(publicKey);
   const previous: TBlockHash  = "0000000000000000000000000000000000000000000000000000000000000000";
@@ -26,25 +29,25 @@ export const bananoOpen = async (accountState: AccountState, privateKey: string)
   const link = await getOpenLink(account);
   const representative = config.defaultRepresentative;
   const balance: bigint = await getOpenBlockBalance(account, link);
-  const openBlock = await generateBananoReceiveBlock(account, balance, link, representative, previous);
+  const openBlock = generateBananoReceiveBlock(account, balance, link, representative, previous);
+
+  // Generate work and signature for open block.
+  const workPromise: Promise<string> = generateWork(openBlock.previous);
+  const signPromise: Promise<string> = generateSignature(privateKey, openBlock);
+  openBlock.signature = await signPromise;
+  openBlock.work      = await workPromise;
   
   let openBlockRequest: any = Object.assign({}, openBlock);
   openBlockRequest.balance = openBlockRequest.balance.toString(10);
 
-  const response: IBananoProcessResponse = await bananode.jsonRequest({
-    "action": "process",
-    "json_block": "true",
-    "subtype": "open",
-    "block": openBlockRequest
-  });
+  const openBlockHash = await processBlock(openBlockRequest, "open", "open");
+  const openAccountCache: AccountCache = new AccountCache(account);
+  openAccountCache.updateInfo(openBlockHash, openBlock.balance, "ready");
 
-  if (response.error) {
-    throw Error(`BananodeRPCError: Process open account returned error: ${response.error}`);
-  }
-
-  return response.hash;
+  return { openBlockHash, openAccountCache };
 };
 
+// Find receivable
 const getOpenLink = async (account: string): Promise<string> => {
   const sendBlockHashes = await getBananoReceivable(account);
   const link: string = sendBlockHashes[0];

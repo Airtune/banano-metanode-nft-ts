@@ -1,89 +1,48 @@
 
-import { AccountState } from '../account-state';
-import { bananode } from '../bananode';
-import { generateMintAndKeepBlock } from '../block-generators/mint';
+import { AccountCache } from '../account-cache';
 import { generateSupplyBlock } from "../block-generators/supply"
-import { BLOCK_HASH_PATTERN } from '../constants';
 import { bananoIpfs } from '../lib/banano-ipfs';
 import { generateSignature } from '../lib/generate-signature';
 import { generateWork } from '../lib/generate-work';
-import { getAccountInfo } from '../lib/get-account-info';
 import { getBananoAccount } from '../lib/get-banano-account';
 import { getPublicKey } from '../lib/get-public-key';
-import { TAccount, TBlockHash, TPrivateKey, TPublicKey } from '../types/banano';
+import { processBlock } from '../lib/process-block';
+import { TAccount, TPrivateKey, TPublicKey } from '../types/banano';
+import { mintAndKeepCmd } from './mint-and-keep';
+import { mintAndSendCmd } from './mint-and-send';
 
-export const supplyMintAndKeep = async (accountState: AccountState, privateKey: TPrivateKey, maxSupply: bigint, metadataIpfsCID: string) => {
+// Supply and Mint command to generate blocks, sign them, generate work,
+// and finally process them on the Banano network.
+export const supplyAndMintCmd = async (accountCache: AccountCache, privateKey: TPrivateKey, maxSupply: bigint, metadataIpfsCID: string, recipient: TAccount = undefined): Promise<{ supplyBlockHash: string, mintBlockHash: string }> => {
   // Get account.
   const publicKey: TPublicKey = getPublicKey(privateKey);
   const account: TAccount     = getBananoAccount(publicKey);
 
   // Generate change#supply block.
-  const accountInfo      = await getAccountInfo(account);
-  const supplyPrevious   = accountInfo.frontier;
-  const supplyBalanceRaw = BigInt(accountInfo.balance);
+  const supplyPrevious   = await accountCache.getFrontier();
+  const supplyBalanceRaw = await accountCache.getBalance();
   const supplyBlock      = generateSupplyBlock(account, supplyPrevious, supplyBalanceRaw, maxSupply);
 
   // Generate work and signature for change#supply block.
-  const workPromise: Promise<string> = generateWork(supplyPrevious);
-  const signPromise: Promise<string> = generateSignature(privateKey, supplyBlock);
-  
-  supplyBlock.signature = await signPromise;
-  supplyBlock.work      = await workPromise;
+  const supplyWorkPromise: Promise<string> = generateWork(supplyPrevious);
+  const supplySignPromise: Promise<string> = generateSignature(privateKey, supplyBlock);
+  supplyBlock.signature = await supplyWorkPromise;
+  supplyBlock.work      = await supplySignPromise;
 
   // Process change#supply block on the Banano ledger.
   const supplyBlockRequest: any = Object.assign({}, supplyBlock);
   supplyBlockRequest.balance = supplyBlock.balance.toString(10);
-  const supplyBlockHash = await processSupply(supplyBlockRequest);
-
-  // Process change#mint block on the Banano ledger.
-  const mintPrevious = supplyBlockHash;
+  const supplyBlockHash = await processBlock(supplyBlockRequest, "change", "change#supply");
+  accountCache.updateInfo(supplyBlockHash, supplyBalanceRaw, "supply_awaiting_mint");
+  
+  // Mint first NFT (required for change#supply block to be valid.)
   const metadataRepresentative = bananoIpfs.ifpsCidV0ToAccount(metadataIpfsCID) as TAccount;
-  const mintBlock = generateMintAndKeepBlock(metadataRepresentative, account, mintPrevious, supplyBlock.balance);
-  const mintBlockHash = await processMintAndKeep(mintBlock);
-}
-
-const processSupply = async (supplyBlockRequest: any): Promise<TBlockHash> => {
-  const response = await bananode.jsonRequest({
-    "action": "process",
-    "json_block": "true",
-    "subtype": "change",
-    "block": supplyBlockRequest
-  });
-
-  if (typeof response !== "object") {
-    throw Error(`BananoNodeRPCError: Unexpected response for process change#supply, got: ${response}`);
+  let mintBlockHash;
+  if (recipient) {
+    mintBlockHash = await mintAndSendCmd(accountCache, privateKey, metadataRepresentative, recipient);
+  } else {
+    mintBlockHash = await mintAndKeepCmd(accountCache, privateKey, metadataRepresentative);
   }
-
-  if (response["error"]) {
-    throw Error(`BananoNodeRPCError: Process change#supply block returned error: ${response["error"]}`);
-  }
-
-  if (!("" + response["hash"]).match(BLOCK_HASH_PATTERN)) {
-    throw Error(`BananoNodeRPCError: Process change#supply block returned error: ${response["error"]}`);
-  }
-
-  return response["hash"];
+  
+  return { supplyBlockHash, mintBlockHash };
 };
-
-const processMintAndKeep = async (mintBlockRequest: any): Promise<TBlockHash> => {
-  const response = await bananode.jsonRequest({
-    "action": "process",
-    "json_block": "true",
-    "subtype": "change",
-    "block": mintBlockRequest
-  });
-
-  if (typeof response !== "object") {
-    throw Error(`BananoNodeRPCError: Unexpected response for process change#supply, got: ${response}`);
-  }
-
-  if (response["error"]) {
-    throw Error(`BananoNodeRPCError: Process change#supply block returned error: ${response["error"]}`);
-  }
-
-  if (!("" + response["hash"]).match(BLOCK_HASH_PATTERN)) {
-    throw Error(`BananoNodeRPCError: Process change#supply block returned error: ${response["error"]}`);
-  }
-
-  return response["hash"];
-}

@@ -1,10 +1,12 @@
+import { TAccount, TBlockHash } from "../types/banano";
+
 export interface IBananoBlock {
   type: "state",
-  account: string,
-  previous: string,
-  representative: string,
+  account: TAccount,
+  previous: TBlockHash,
+  representative: TAccount,
   balance: bigint,
-  link: string,
+  link: TBlockHash,
   signature?: string | undefined;
   work?: string | undefined;
 };

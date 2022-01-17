@@ -1,13 +1,15 @@
-import { AssetCrawler } from "../asset-crawler";
-import { IAtomicSwapConditions } from "../interfaces/atomic-swap-conditions";
-import { parseAtomicSwapRepresentative } from "../block-parsers/atomic-swap";
-import { findBlockAtHeightAndPreviousBlock } from "../lib/find-block-at-height-and-previous-block";
+import { AssetCrawler } from "../../asset-crawler";
+import { IAtomicSwapConditions } from "../../interfaces/atomic-swap-conditions";
+import { parseAtomicSwapRepresentative } from "../../block-parsers/atomic-swap";
+import { findBlockAtHeightAndPreviousBlock } from "../../lib/find-block-at-height-and-previous-block";
+import { TAccount } from "../../types/banano";
 
 // State for when send#atomic_swap is confirmed and receive#atomic_swap is ready to be received but hasn't been confirmed yet.
 export async function atomicSwapReceivableAddNextAssetBlock(assetCrawler: AssetCrawler): Promise<boolean> {
   const sendAtomicSwap = assetCrawler.frontier;
   const sendAtomicSwapHash = sendAtomicSwap.nanoBlock.hash;
-  const atomicSwapConditions: IAtomicSwapConditions = parseAtomicSwapRepresentative(sendAtomicSwap.nanoBlock.representative);
+  const representative = sendAtomicSwap.nanoBlock.representative as TAccount;
+  const atomicSwapConditions: IAtomicSwapConditions = parseAtomicSwapRepresentative(representative);
   // guard
   if (typeof atomicSwapConditions === 'undefined') {
     throw Error(`AtomicSwapError: Unable to parse conditions for representative: ${sendAtomicSwap.nanoBlock.representative}`);
@@ -30,8 +32,8 @@ export async function atomicSwapReceivableAddNextAssetBlock(assetCrawler: AssetC
 
   if (isReceive && receivesAtomicSwap && hasCorrectHeight && representativeUnchanged) {
     assetCrawler.assetChain.push({
-      state: 'pending_payment',
-      type: 'receive#atomic_swap',
+      state: "atomic_swap_payable",
+      type: "receive#atomic_swap",
       account: recipient,
       owner: sender,
       locked: true,
@@ -41,8 +43,8 @@ export async function atomicSwapReceivableAddNextAssetBlock(assetCrawler: AssetC
   } else {
     // Atomic swap conditions were not met. Start chain from send#atomic_swap with new state.
     assetCrawler.assetChain.push({
-      state: 'cancel_atomic_swap',
-      type: 'receive#atomic_swap',
+      state: "(return_to_nft_seller)",
+      type: "receive#abort_receive_atomic_swap",
       account: recipient,
       owner: sender,
       locked: false,

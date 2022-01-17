@@ -16,6 +16,7 @@ import { BURN_ACCOUNTS } from "../../constants";
 // src
 import { AssetCrawler } from "../../asset-crawler";
 import { parseAtomicSwapRepresentative } from "../../block-parsers/atomic-swap";
+import { TAccount } from "../../types/banano";
 
 // State for when the the block's account own the asset.
 export async function burnedAddNextAssetBlock(assetCrawler: AssetCrawler): Promise<boolean> {
@@ -47,8 +48,9 @@ function toAssetBlock(assetCrawler: AssetCrawler, block: INanoBlock): (IAssetBlo
         traceLength: assetCrawler.traceLength
       };
     }
-    
-    const atomicSwapConditions: IAtomicSwapConditions = parseAtomicSwapRepresentative(block.representative);
+
+    const representative = block.representative as TAccount;
+    const atomicSwapConditions: IAtomicSwapConditions = parseAtomicSwapRepresentative(representative);
     const ownershipBlockHeight = BigInt(assetCrawler.frontier.nanoBlock.height);
     if (atomicSwapConditions && atomicSwapConditions.assetHeight === ownershipBlockHeight) {
       return {
