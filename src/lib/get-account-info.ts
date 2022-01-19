@@ -6,7 +6,7 @@ export const getAccountInfo = async (account: string) => {
 
 export const safeGetAccountInfo = async (account: string) => {
   try {
-    return bananode.getAccountInfo(account);
+    return await bananode.getAccountInfo(account);
   } catch (error) {
     return undefined;
   }

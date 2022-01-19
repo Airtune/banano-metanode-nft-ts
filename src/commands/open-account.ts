@@ -17,9 +17,10 @@ import { generateSignature } from "../lib/generate-signature";
 // Open account command to find receivable, generate the open block, sign it, generate work,
 // and finally process it on the Banano ledger.
 export const openAccountCmd = async (privateKey: string): Promise<{ openBlockHash: TBlockHash, openAccountCache: AccountCache }> => {
-  const publicKey: TPublicKey = getPublicKey(privateKey);
+  const publicKey: TPublicKey = await getPublicKey(privateKey);
   const account: TAccount     = getBananoAccount(publicKey);
   const previous: TBlockHash  = "0000000000000000000000000000000000000000000000000000000000000000";
+
   const accountInfo = await safeGetAccountInfo(account);
 
   if (typeof accountInfo === "object" && !accountInfo["error"]) {
@@ -32,7 +33,7 @@ export const openAccountCmd = async (privateKey: string): Promise<{ openBlockHas
   const openBlock = generateBananoReceiveBlock(account, balance, link, representative, previous);
 
   // Generate work and signature for open block.
-  const workPromise: Promise<string> = generateWork(openBlock.previous);
+  const workPromise: Promise<string> = generateWork(publicKey);
   const signPromise: Promise<string> = generateSignature(privateKey, openBlock);
   openBlock.signature = await signPromise;
   openBlock.work      = await workPromise;

@@ -53,7 +53,7 @@ if (typeof FINISH_SUPPLY_HEADER !== "string" || FINISH_SUPPLY_HEADER.length !== 
   throw Error(`SUPPLY_HEX_HEADER must be 24 char hex`);
 }
 
-if (typeof CANCEL_SUPPLY_REPRESENTATIVE !== "string" || CANCEL_SUPPLY_REPRESENTATIVE.match(ADDRESS_PATTERN)) {
+if (typeof CANCEL_SUPPLY_REPRESENTATIVE !== "string" || !CANCEL_SUPPLY_REPRESENTATIVE.match(ADDRESS_PATTERN)) {
   throw Error(`CANCEL_SUPPLY_REPRESENTATIVE must be a valid Banano address`);
 }
 

@@ -15,7 +15,7 @@ import { mintAndSendCmd } from './mint-and-send';
 // and finally process them on the Banano network.
 export const supplyAndMintCmd = async (accountCache: AccountCache, privateKey: TPrivateKey, maxSupply: bigint, metadataIpfsCID: string, recipient: TAccount = undefined): Promise<{ supplyBlockHash: string, mintBlockHash: string }> => {
   // Get account.
-  const publicKey: TPublicKey = getPublicKey(privateKey);
+  const publicKey: TPublicKey = await getPublicKey(privateKey);
   const account: TAccount     = getBananoAccount(publicKey);
 
   // Generate change#supply block.

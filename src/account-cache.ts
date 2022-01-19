@@ -12,7 +12,7 @@ export class AccountCache {
   private _accountState: TAccountState;
 
   constructor(account: TAccount) {
-    this._account = account
+    this._account = account;
   }
 
   async updateInfoFromBananode() {
