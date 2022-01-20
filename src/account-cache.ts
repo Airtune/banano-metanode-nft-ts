@@ -14,7 +14,7 @@ export class AccountCache {
   private _accountState: TAccountState;
   private _privateKey: TPrivateKey;
   private _publicKey: TPublicKey;
-
+  private _representative: TAccount;
 
   constructor(privateKey: TBlockHash, publicKey: TPublicKey, account: TAccount) {
     this._privateKey = privateKey;
@@ -28,8 +28,9 @@ export class AccountCache {
     this._frontier = accountInfo.frontier;
     this._balance = BigInt(accountInfo.balance);
     
-    const representative = frontierBlock.representative as TAccount;
-    const supplyInfo = parseSupplyRepresentative(representative);
+    this._representative = frontierBlock.representative as TAccount;
+
+    const supplyInfo = parseSupplyRepresentative(this._representative);
     if (supplyInfo) {
       this._accountState = "supply_awaiting_mint";
     } else {
@@ -37,10 +38,11 @@ export class AccountCache {
     }
   }
 
-  updateInfo(frontier: TBlockHash, balance: bigint, accountState: TAccountState) {
+  updateInfo(frontier: TBlockHash, balance: bigint, accountState: TAccountState, representative: TAccount) {
     this._frontier = frontier;
     this._balance = balance;
     this._accountState = accountState;
+    this._representative = representative;
   }
 
   // Lazy updateInfoFromBananode
@@ -53,6 +55,12 @@ export class AccountCache {
   public async getFrontier() {
     if (!this._balance) { await this.updateInfoFromBananode(); }
     return this._frontier;
+  }
+
+  // Lazy updateInfoFromBananode
+  public async getRepresentative() {
+    if (!this._representative) { await this.updateInfoFromBananode(); }
+    return this._representative;
   }
 
   // Cached value (can be uninitialized)

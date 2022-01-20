@@ -35,7 +35,7 @@ export const openAccountCmd = async (accountCache: AccountCache): Promise<TBlock
   block.work      = await workPromise;
 
   const openBlockHash = await processBlock(block, "open", "open");
-  accountCache.updateInfo(openBlockHash, block.balance, "ready");
+  accountCache.updateInfo(openBlockHash, block.balance, "ready", representative);
 
   return openBlockHash;
 };
@@ -51,7 +51,7 @@ const getOpenLink = async (account: string): Promise<string> => {
   return link;
 };
 
-const getOpenBlockBalance = async (account:string, link: string): Promise<bigint> => {
+const getOpenBlockBalance = async (account: string, link: string): Promise<bigint> => {
   const sendBlock = await getBlockInfo(link);
 
   if (typeof sendBlock !== "object") {
