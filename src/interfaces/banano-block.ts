@@ -10,3 +10,8 @@ export interface IBananoBlock {
   signature?: string | undefined;
   work?: string | undefined;
 };
+
+
+export interface ISignedBananoBlock extends IBananoBlock {
+  signature: string | undefined;
+};

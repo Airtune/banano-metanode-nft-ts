@@ -87,7 +87,7 @@ export class AssetCrawler {
     return this._assetChain;
   }
 
-  public get frontier() {
+  public get frontier(): IAssetBlock {
     return this._assetChain[this._assetChain.length - 1];
   }
 
