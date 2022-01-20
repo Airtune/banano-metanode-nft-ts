@@ -1,8 +1,10 @@
 import { parseSupplyRepresentative } from "./block-parsers/supply";
 import { getAccountInfo } from "./lib/get-account-info";
+import { getBananoAccount } from "./lib/get-banano-account";
 import { getBlock } from "./lib/get-block";
+import { getPublicKey } from "./lib/get-public-key";
 import { TAccountState } from "./types/account-state";
-import { TAccount, TBlockHash } from "./types/banano";
+import { TAccount, TBlockHash, TPrivateKey, TPublicKey } from "./types/banano";
 
 // Caches the state of an account to avoid requesting the same data multiple times
 export class AccountCache {
@@ -10,8 +12,13 @@ export class AccountCache {
   private _frontier: TBlockHash;
   private _balance: bigint;
   private _accountState: TAccountState;
+  private _privateKey: TPrivateKey;
+  private _publicKey: TPublicKey;
 
-  constructor(account: TAccount) {
+
+  constructor(privateKey: TBlockHash, publicKey: TPublicKey, account: TAccount) {
+    this._privateKey = privateKey;
+    this._publicKey = publicKey;
     this._account = account;
   }
 
@@ -56,6 +63,14 @@ export class AccountCache {
   // Cached value (can be uninitialized)
   public get cachedFrontier() {
     return this._frontier;
+  }
+
+  public get privateKey() {
+    return this._privateKey;
+  }
+
+  public get publicKey() {
+    return this._publicKey;
   }
 
   public get account() {
