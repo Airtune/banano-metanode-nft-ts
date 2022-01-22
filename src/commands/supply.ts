@@ -16,6 +16,7 @@ export const supplyCmd = async (accountCache: AccountCache, maxSupply: bigint): 
   // Generate change#supply block.
   const previous: TBlockHash = await accountCache.getFrontier();
   const balanceRaw: bigint   = await accountCache.getBalance();
+  const representative: TAccount = await accountCache.getRepresentative();
   const block: IBananoChange = generateSupplyBlock(accountCache.account, previous, balanceRaw, maxSupply);
 
   // Generate work and signature for change#supply block.
@@ -25,7 +26,7 @@ export const supplyCmd = async (accountCache: AccountCache, maxSupply: bigint): 
   block.work      = await workPromise;
 
   const supplyBlockHash = await processBlock(block, "change", "change#supply");
-  accountCache.updateInfo(supplyBlockHash, balanceRaw, "supply_awaiting_mint");
+  accountCache.updateInfo(supplyBlockHash, balanceRaw, "supply_awaiting_mint", representative);
   
   return supplyBlockHash;
 };

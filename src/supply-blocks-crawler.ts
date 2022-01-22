@@ -8,6 +8,7 @@ import {
   MAX_RPC_ITERATIONS,
   META_PROTOCOL_SUPPORTED_VERSIONS,
 } from "./constants";
+import { TAccount } from "./types/banano";
 
 // Crawler to find all supply blocks by an issuer
 export class SupplyBlocksCrawler {
@@ -57,12 +58,12 @@ export class SupplyBlocksCrawler {
     }
 
     // Mint block representative must not be special accounts or contain a data encoding header.
-    if (accountDataType(followedByBlock.representative) !== "unknown") {
+    if (accountDataType(followedByBlock.representative as TAccount) !== "unknown") {
       return false;
     }
 
     // Check if representative is a parsable supply_representative with a supported version
-    const supplyData = parseSupplyRepresentative(block.representative);
+    const supplyData = parseSupplyRepresentative(block.representative as TAccount);
     if (!supplyData) {
       return false;
     }
