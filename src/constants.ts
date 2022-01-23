@@ -27,8 +27,8 @@ export const ATOMIC_SWAP_DELEGATION_HEX_PATTERN = RegExp(`^${ATOMIC_SWAP_DELEGAT
 // https://github.com/Airtune/73-meta-tokens/blob/main/meta_ledger_protocol/supply_block.md
 export const SUPPLY_HEX_HEADER = "51BACEED6078000000"; // must be 18 char hex
 export const SUPPLY_HEX_PATTERN = RegExp(`^${SUPPLY_HEX_HEADER}(?<major>[0-9A-F]{10})(?<minor>[0-9A-F]{10})(?<patch>[0-9A-F]{10})(?<maxSupply>[0-9A-F]{16})$`, "i");
-export const FINISH_SUPPLY_HEADER = "3614865E0051BA0033BB581E"; // must be 24 char hex
-export const FINISH_SUPPLY_HEX_PATTERN = RegExp(`^${FINISH_SUPPLY_HEADER}(?<supplyBlockHeight>[0-9A-F]{40})$`, "i");
+export const FINISH_SUPPLY_HEX_HEADER = "3614865E0051BA0033BB581E"; // must be 24 char hex
+export const FINISH_SUPPLY_HEX_PATTERN = RegExp(`^${FINISH_SUPPLY_HEX_HEADER}(?<supplyBlockHeight>[0-9A-F]{40})$`, "i");
 // Representative used to cancel NFT supply block with a change block in place of the first mint block.
 export const CANCEL_SUPPLY_REPRESENTATIVE = 'ban_1nftsupp1ycance1111oops1111that1111was1111my1111bad1hq5sjhey';
 
@@ -39,7 +39,6 @@ export const BURN_ACCOUNTS = [
   "ban_1111111111111111111111111111111111111111111111111111hifc8npp" // nano burn account
 ]
 
-
 // Validators
 if (typeof ATOMIC_SWAP_HEADER !== "string" || ATOMIC_SWAP_HEADER.length !== 13 || !ATOMIC_SWAP_HEADER.match(HEX_PATTERN)) {
   throw Error(`ATOMIC_SWAP_HEADER must be 13 char hex`);
@@ -49,7 +48,7 @@ if (typeof SUPPLY_HEX_HEADER !== "string" || SUPPLY_HEX_HEADER.length !== 18 || 
   throw Error(`SUPPLY_HEX_HEADER must be 18 char hex`);
 }
 
-if (typeof FINISH_SUPPLY_HEADER !== "string" || FINISH_SUPPLY_HEADER.length !== 24 || !FINISH_SUPPLY_HEADER.match(HEX_PATTERN)) {
+if (typeof FINISH_SUPPLY_HEX_HEADER !== "string" || FINISH_SUPPLY_HEX_HEADER.length !== 24 || !FINISH_SUPPLY_HEX_HEADER.match(HEX_PATTERN)) {
   throw Error(`SUPPLY_HEX_HEADER must be 24 char hex`);
 }
 

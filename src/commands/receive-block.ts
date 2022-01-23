@@ -13,6 +13,7 @@ export const receiveBlockCmd = async (accountCache: AccountCache, link: TBlockHa
   const previous: TBlockHash         = await accountCache.getFrontier();
   const workPromise: Promise<string> = generateWork(previous);
 
+  // use previous representative
   const representative: TAccount = await accountCache.getRepresentative();
   const balanceRaw: bigint       = await accountCache.getBalance() + (amount || await getSendBlockAmount(link));
   const block = generateBananoReceiveBlock(accountCache.account, balanceRaw, link, representative, previous);

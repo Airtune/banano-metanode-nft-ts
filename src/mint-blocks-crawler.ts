@@ -5,6 +5,8 @@ import { bananoIpfs } from "./lib/banano-ipfs";
 import { parseFinishSupplyRepresentative, parseSupplyRepresentative } from "./block-parsers/supply";
 import { validateMintBlock } from "./block-validators/mint-block";
 import { CANCEL_SUPPLY_REPRESENTATIVE, MAX_RPC_ITERATIONS } from "./constants";
+import { IMintBlock } from "./interfaces/mint-block";
+import { TAccount } from "./types/banano";
 
 // Crawler to find all mint blocks for a specific supply block
 export class MintBlocksCrawler {
@@ -45,12 +47,12 @@ export class MintBlocksCrawler {
 
       } else if (blockOffset === 1) {
         if (block.representative === CANCEL_SUPPLY_REPRESENTATIVE) { break; };
-        validateMintBlock(block);
+        validateMintBlock(block as IMintBlock);
         this.parseFirstMint(block);
         this._mintBlocks.push(block);
 
       } else if (blockOffset > 1 && block.representative === this._metadataRepresentative) {
-        validateMintBlock(block);
+        validateMintBlock(block as IMintBlock);
         this._mintBlocks.push(block);
 
       }
@@ -87,7 +89,7 @@ export class MintBlocksCrawler {
   }
 
   private parseSupplyBlock(block: INanoBlock): boolean {
-    const supplyData = parseSupplyRepresentative(block.representative);
+    const supplyData = parseSupplyRepresentative(block.representative as TAccount);
     if (!supplyData) { return false }
 
     const { version, maxSupply } = supplyData;
@@ -99,7 +101,7 @@ export class MintBlocksCrawler {
   }
 
   private parseFinishSupplyBlock(block: INanoBlock): boolean {
-    const finishSupplyData = parseFinishSupplyRepresentative(block.representative);
+    const finishSupplyData = parseFinishSupplyRepresentative(block.representative as TAccount);
     if (!finishSupplyData) {
       return false;
     }

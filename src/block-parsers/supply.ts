@@ -7,9 +7,9 @@ export function parseSupplyRepresentative(representative: TAccount): { version: 
   const match = supplyHex.match(SUPPLY_HEX_PATTERN);
   if (!match) { return undefined; }
 
-  const major: bigint = BigInt(`0x${match.groups.major}`);
-  const minor: bigint = BigInt(`0x${match.groups.minor}`);
-  const patch: bigint = BigInt(`0x${match.groups.patch}`);
+  const major: string = BigInt(`0x${match.groups.major}`).toString(10);
+  const minor: string = BigInt(`0x${match.groups.minor}`).toString(10);
+  const patch: string = BigInt(`0x${match.groups.patch}`).toString(10);
 
   const version: string = `${major}.${minor}.${patch}`;
   const maxSupply: bigint = BigInt(`0x${match.groups.maxSupply}`);

@@ -7,7 +7,8 @@
   "scripts": {
     "start": "ts-node ./index.ts",
     "test": "mocha --require ts-node/register ./test/*.spec.ts",
-    "testOne": "mocha --require ts-node/register ./test/mutex-manager.spec.ts"
+    "testMutexManager": "mocha --require ts-node/register ./test/lib/mutex-manager.spec.ts",
+    "testSupplyBlocksCrawler": "mocha --require ts-node/register ./test/supply-blocks-crawler.spec.ts"
   },
   "author": "Airtune",
   "license": "MIT",

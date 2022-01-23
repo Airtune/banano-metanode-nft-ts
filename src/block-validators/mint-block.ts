@@ -1,10 +1,10 @@
 import * as bananojs from "@bananocoin/bananojs";
-import { INanoBlock } from "nano-account-crawler/dist/nano-interfaces";
 import { SUPPLY_HEX_PATTERN } from "../constants";
 import { accountDataType } from "../account-data-type";
-import { TAccount } from "../types/banano";
+import { TAccount, TBlockHash } from "../types/banano";
+import { IMintBlock } from "../interfaces/mint-block";
 
-function validateMintRepresentative(block: INanoBlock) {
+function validateMintRepresentative(block: IMintBlock) {
   const representative = block.representative as TAccount;
   const representativeType = accountDataType(representative);
   if (representativeType !== "unknown") {
@@ -17,7 +17,7 @@ function validateMintRepresentative(block: INanoBlock) {
   }
 }
 
-export function validateMintBlock(mintBlock: INanoBlock) {
+export function validateMintBlock(mintBlock: IMintBlock) {
   if (mintBlock.type === 'state') {
     switch (mintBlock.subtype) {
       case 'send':

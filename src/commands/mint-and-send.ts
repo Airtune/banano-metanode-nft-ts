@@ -14,7 +14,7 @@ export const mintAndSendCmd = async (accountCache: AccountCache, metadataReprese
   const workPromise: Promise<string> = generateWork(previous);
 
   // Process send#mint block on the Banano ledger.
-  const balanceRaw: bigint = await accountCache.getBalance() - BigInt("1");
+  const balanceRaw: bigint = await accountCache.getBalance();
   const block = generateMintAndSendBlock(metadataRepresentative, accountCache.account, recipient, previous, balanceRaw);
   block.signature = await generateSignature(accountCache.privateKey, block);
   block.work      = await workPromise;

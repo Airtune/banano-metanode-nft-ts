@@ -25,25 +25,3 @@ export const generateSendAtomicSwapBlock = async (sender: TAccount, previous: TB
   const block: IBananoSend = generateBananoSendBlock(sender, recipient, BigInt("1"), previous, previousBalanceRaw, atomicSwapRepresentative);
   return block;
 }
-
-/*
-export const generateReceiveAtomicSwapBlock = async (account: string, sendAtomicSwapBlockHash, receiveHeight: bigint) => {
-  const previousHeight: bigint = receiveHeight - BigInt("1");
-  const previousBlock = await findBlockAtHeight(account, previousHeight);
-  return {
-    "type": "state",
-    "account": account,
-    "previous": previousBlock.hash,
-    "representative": previousBlock.representative, // changing representative here cancels the atomic swap
-    "link": sendAtomicSwapBlockHash
-  }
-}
-
-export const generateAbortReceiveAtomicSwapBlock = async() => {
-
-}
-
-export const generateAbortPaymentBlock = async() => {
-  
-}
-*/
