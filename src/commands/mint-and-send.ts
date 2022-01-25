@@ -21,7 +21,9 @@ export const mintAndSendCmd = async (accountCache: AccountCache, metadataReprese
 
   // TODO: Validate it locally first before processing on-chain
   const mintBlockHash = await processBlock(block, "send", "send#mint");
-  accountCache.updateInfo(mintBlockHash, balanceRaw, "ready", metadataRepresentative);
+  if (mintBlockHash) {
+    accountCache.updateInfo(mintBlockHash, balanceRaw - BigInt("1"), "ready", metadataRepresentative);
+  }
 
   return mintBlockHash;
 };

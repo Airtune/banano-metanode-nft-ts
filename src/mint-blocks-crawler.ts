@@ -52,8 +52,14 @@ export class MintBlocksCrawler {
         this._mintBlocks.push(block);
 
       } else if (blockOffset > 1 && block.representative === this._metadataRepresentative) {
-        validateMintBlock(block as IMintBlock);
-        this._mintBlocks.push(block);
+        try {
+          validateMintBlock(block as IMintBlock);
+          this._mintBlocks.push(block);
+        } catch (error) {
+          if (!error.message.match(/^MintBlockError\:/)) {
+            throw error;
+          }
+        }
 
       }
 

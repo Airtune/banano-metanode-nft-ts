@@ -21,7 +21,9 @@ export const mintAndKeepCmd = async (accountCache: AccountCache, metadataReprese
 
   // TODO: Validate it locally first before processing on-chain
   const mintBlockHash = await processBlock(block, "change", "change#mint");
-  accountCache.updateInfo(mintBlockHash, balanceRaw, "ready", metadataRepresentative);
+  if (mintBlockHash) {
+    accountCache.updateInfo(mintBlockHash, balanceRaw, "ready", metadataRepresentative);
+  }
 
   return mintBlockHash;
 };

@@ -8,7 +8,8 @@
     "start": "ts-node ./index.ts",
     "test": "mocha --require ts-node/register ./test/*.spec.ts",
     "testMutexManager": "mocha --require ts-node/register ./test/lib/mutex-manager.spec.ts",
-    "testSupplyBlocksCrawler": "mocha --require ts-node/register ./test/supply-blocks-crawler.spec.ts"
+    "testSupplyBlocksCrawler": "mocha --require ts-node/register ./test/supply-blocks-crawler.spec.ts",
+    "testMintBlocksCrawler": "mocha --require ts-node/register ./test/mint-blocks-crawler.spec.ts"
   },
   "author": "Airtune",
   "license": "MIT",
