@@ -21,6 +21,7 @@ describe('SupplyBlocksCrawler', () => {
   });
   
   it("registers change#supply blocks followed by a valid mint block", async () => {
+    // IPFS CID: QmaP8dJDpmft1B9GnWMH7qyLh2uRfzAFjU7FNc7SmWK1pG
     expect(supplyBlockHashes1sux).to.include("2999304B6327A0A0A1F81BFE601477A351E2D9EE73F1F6EAF5719F25A7DB2A51");
   });
 
