@@ -7,40 +7,40 @@ chai.use(chaiAsPromised);
 const expect = chai.expect;
 
 describe('AssetCrawler', function() {
-  it("can't send asset you have already sent", async () => {
+  it("transfers ownership with send2#asset after the receive block (for send1#mint) has been confirmed", async () => {
+
+  });
+
+  it("transfers ownership with send2#asset after the receive block (for send1#asset) has been confirmed", async () => {
+
+  });
+
+  it("ignores send2#asset before the receive block (for send1#mint) has been confirmed", async () => {
+
+  });
+
+  it("ignores send2#asset before the receive block (for send1#asset) has been confirmed", async () => {
+
+  });
+
+  it("ignores send#asset block for asset you have already sent with a send#asset block", async () => {
     throw Error("not implemented");
   });
 
-  it("can't send asset before you receive it", async () => {
+  it("ignores send#asset block for asset you have already sent with a send#mint block", async () => {
     throw Error("not implemented");
   });
 
-  it("can't send asset before the change#mint block", async () => {
+  it("ignores send#asset blocks before the supply and mint blocks", async () => {
     throw Error("not implemented");
   });
 
-  it("can't send asset before the supply block", async () => {
+  it("ignores send#mint blocks before the supply and mint blocks", async () => {
     throw Error("not implemented");
   });
 
-  it("sends an asset from a valid send#mint block", async () => {
-    throw Error("not implemented");
-  });
+  it("tracks several valid sends and receives for an asset", async () => {
 
-  it("sends an asset from a valid send#asset block", async () => {
-    throw Error("not implemented");
-  });
-
-  it("receives an asset from a valid receive#mint block", async () => {
-    throw Error("not implemented");
-  });
-
-  it("receives an asset from a valid receive#asset block", async () => {
-    throw Error("not implemented");
-  });
-
-  it("can trace a long chain of sends", async () => {
-    throw Error("not implemented");
   });
 
   it("cancels atomic swap if receive#atomic_swap block has a different representative than previous block", async () => {
