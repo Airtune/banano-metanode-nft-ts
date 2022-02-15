@@ -2,7 +2,7 @@ import { bananode } from "../bananode";
 import { getBananodeVersion } from "./get-bananode-version";
 
 export const getBananoReceivable = async (account: string): Promise<string[]> => {
-  const { major } = await getBananodeVersion();
+  //const { major } = await getBananodeVersion();
                                   // Unlike Nano, Banano V23.0 doesn't use receivable yet >:[
   const requestAction = "pending";//(major >= 23 ? "receivable" : "pending");
 
