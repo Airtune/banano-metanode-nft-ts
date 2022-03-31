@@ -137,40 +137,20 @@ describe('AssetCrawler', function() {
     expect(assetCrawler.frontier.owner).to.equal("ban_1oozinhbrw7nrjfmtq1roybi8t7q7jywwne4pjto7oy78injdmn4n3a5w5br");
   });
 
-  it("ignores send#asset before the receive block for the asset has been confirmed", async () => {
-    throw Error("not implemented");
-  });
+  it("ignores send#asset before the receive block for the asset has been confirmed");
 
-  it("ignores send#asset block for asset you have already sent with a send#asset block", async () => {
-    throw Error("not implemented");
-  });
+  it("ignores send#asset block for asset you have already sent with a send#asset block");
 
-  it("ignores send#mint blocks before the supply and mint blocks", async () => {
-    throw Error("not implemented");
-  });
+  it("ignores send#mint blocks before initializing supply and mint blocks");
 
-  it("tracks several valid sends and receives for an asset", async () => {
-    throw Error("not implemented");
-  });
+  // Todo: check if there's other variables that can change the block hash to break the atomic swap
+  it("cancels atomic swap if receive#atomic_swap block has a different representative than previous block");
 
-  it("cancels atomic swap if receive#atomic_swap block has a different representative than previous block", async () => {
-    // Todo: check if there's other variables that can change the block hash to break the atomic swap
-    throw Error("not implemented");
-  });
+  it("cancels atomic swap if a block other than the relevant receive#atomic_swap is confirmed at receive_height");
 
-  it("cancels atomic swap if a block other than the relevant receive#atomic_swap is confirmed at receive_height", async () => {
-    throw Error("not implemented");
-  });
+  it("cancels atomic swap if a block other than send#payment follows receive#atomic_swap");
 
-  it("cancels atomic swap if a block other than send#payment follows receive#atomic_swap", async () => {
-    throw Error("not implemented");
-  });
+  it("cancels atomic swap if send#payment sends too little raw");
 
-  it("cancels atomic swap if send#payment sends too little raw", async () => {
-    throw Error("not implemented");
-  });
-
-  it("cancels atomic swap if send#payment sends to the wrong account", async () => {
-    throw Error("not implemented");
-  });
+  it("cancels atomic swap if send#payment sends to the wrong account");
 });
