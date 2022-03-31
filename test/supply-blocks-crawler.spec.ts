@@ -79,4 +79,11 @@ describe('SupplyBlocksCrawler', () => {
     // followed by change rep to ban_1111111111111111111111111111111111111111111111111111hifc8npp
     expect(supplyBlockHashes1sux).to.not.include("E93AE0F5EDDB957CCE0065A184987C98623AAB2419AC517503190DBF949E9A4F");
   });
+
+  it("ignores supply blocks for already initialized metadata representatives", async () => {
+    // IPFS CID: QmaP8dJDpmft1B9GnWMH7qyLh2uRfzAFjU7FNc7SmWK1pG
+    // Corresponding Metadata Representative: ban_3eqgz3zg96g4kfm6qc549sh9zgeimg4y71s787dy54z788td651onqz3wmdj
+    // Already used earlier: E415CF08B08111939C9E896F574F99F22E1A1E873504724EB17DFB9B7CA986B1
+    expect(supplyBlockHashes1sux).to.not.include("B64219CA78D3DFE7E5A2770340AABA4B2DBDA367180B21D416EC13D7FC02F11D");
+  });
 });
