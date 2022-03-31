@@ -1,6 +1,6 @@
 {
   "name": "banano-metanode-nft-ts",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "A metanode implementation for the Banano Meta NFT Protocol in Typescript.",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -9,7 +9,8 @@
     "test": "mocha --require ts-node/register ./test/*.spec.ts",
     "testMutexManager": "mocha --require ts-node/register ./test/lib/mutex-manager.spec.ts",
     "testSupplyBlocksCrawler": "mocha --require ts-node/register ./test/supply-blocks-crawler.spec.ts",
-    "testMintBlocksCrawler": "mocha --require ts-node/register ./test/mint-blocks-crawler.spec.ts"
+    "testMintBlocksCrawler": "mocha --require ts-node/register ./test/mint-blocks-crawler.spec.ts",
+    "testAssetCrawler": "mocha --require ts-node/register ./test/asset-crawler.spec.ts"
   },
   "author": "Airtune",
   "license": "MIT",

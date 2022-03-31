@@ -6,16 +6,16 @@ import { AssetCrawler } from "../../asset-crawler";
 import { parseAtomicSwapRepresentative } from "../../block-parsers/atomic-swap";
 import { findBlockAtHeightAndPreviousBlock } from "../../lib/find-block-at-height-and-previous-block";
 import { TAccount } from "../../types/banano";
+import { IAssetBlock } from "../../interfaces/asset-block";
 
 // State for when receive#atomic_swap is confirmed but send#payment hasn't been sent yet.
 export async function pendingPaymentAddNextAssetBlock(assetCrawler: AssetCrawler): Promise<boolean> {
   const paymentAccount = assetCrawler.frontier.account;
   const paymentHeight = BigInt(assetCrawler.frontier.nanoBlock.height) + BigInt(1);
   const [previousBlock, nextBlock]: [INanoBlock, INanoBlock] = await findBlockAtHeightAndPreviousBlock(paymentAccount, paymentHeight);
-  const sendAtomicSwap = assetCrawler.assetChain[assetCrawler.assetChain.length - 2];
-
+  const sendAtomicSwap: IAssetBlock = assetCrawler.findSendAtomicSwapBlock();
   // guards
-  if (typeof nextBlock === 'undefined') {
+  if (nextBlock === undefined || sendAtomicSwap === undefined) {
     return false;
   }
   if (sendAtomicSwap.state !== 'atomic_swap_receivable') {
@@ -24,10 +24,9 @@ export async function pendingPaymentAddNextAssetBlock(assetCrawler: AssetCrawler
   // NB: Trace length from findBlockAtHeight might be significantly larger than 1.
   assetCrawler.traceLength += BigInt("1");
 
-  const representative = sendAtomicSwap.nanoBlock.representative as TAccount;
-  const atomicSwapConditions: IAtomicSwapConditions = parseAtomicSwapRepresentative(representative);
+  const atomicSwapConditions: IAtomicSwapConditions = assetCrawler.currentAtomicSwapConditions();
   const payedEnough = BigInt(nextBlock.amount) >= atomicSwapConditions.minRaw;
-  const payedCorrectAccount = nextBlock.account === sendAtomicSwap.account;
+  const payedCorrectAccount = nextBlock.account === sendAtomicSwap.owner;
   const representativeUnchanged = nextBlock.representative === previousBlock.representative;
 
   if (nextBlock.subtype === 'send' && payedCorrectAccount && payedEnough && representativeUnchanged) {

@@ -14,7 +14,7 @@ import { TAccount, TBlockHash } from "../types/banano";
 export const sendAtomicSwapCmd = async (assetCrawler: AssetCrawler, accountCache: AccountCache, recipient: TAccount, minRaw: bigint): Promise<TBlockHash> => {
   const previous: TBlockHash = await accountCache.getFrontier();
   const workPromise: Promise<string> = generateWork(previous);
-  const previousBalanceRaw: bigint = await accountCache.getBalance() - BigInt("1");
+  const previousBalanceRaw: bigint = await accountCache.getBalance();
 
   // Find info about swap asset
   const assetFrontierBlock: IAssetBlock = assetCrawler.frontier;
@@ -44,6 +44,6 @@ export const sendAtomicSwapCmd = async (assetCrawler: AssetCrawler, accountCache
   block.work      = await workPromise;
 
   // TODO: Validate it locally first before processing on-chain
-  const blockHash = await processBlock(block, "send", "send#asset");
+  const blockHash = await processBlock(block, "send", "send#atomic_swap");
   return blockHash;
 };

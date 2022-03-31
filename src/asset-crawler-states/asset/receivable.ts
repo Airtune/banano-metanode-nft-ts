@@ -3,8 +3,9 @@ import { AssetCrawler } from "../../asset-crawler";
 
 export async function receivableAddNextAssetBlock(assetCrawler: AssetCrawler): Promise<boolean> {
   const sendBlockHash = assetCrawler.frontier.nanoBlock.hash;
-  const recipient = assetCrawler.frontier.nanoBlock.account;
-  const receiveBlock = await findReceiveBlock(assetCrawler.frontier.account, sendBlockHash, recipient);
+  const sender = assetCrawler.frontier.account;
+  const recipient = assetCrawler.frontier.owner;
+  const receiveBlock = await findReceiveBlock(sender, sendBlockHash, recipient);
   // guards
   if (typeof receiveBlock === 'undefined') { return false; }
 

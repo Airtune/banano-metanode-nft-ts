@@ -24,5 +24,6 @@ export const sendCmd = async (accountCache: AccountCache, assetRepresentative: T
 
   // TODO: Validate it locally first before processing on-chain
   const blockHash = await processBlock(block, "send", "send#asset");
+  accountCache.updateInfo(blockHash, balanceRaw - BigInt(1), "ready", assetRepresentative);
   return blockHash;
 };

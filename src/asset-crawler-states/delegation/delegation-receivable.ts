@@ -6,12 +6,14 @@ import { findBlockAtHeightAndPreviousBlock } from "../../lib/find-block-at-heigh
 import { findBlockAtHeight } from "../../lib/find-block-at-height";
 import { INanoBlock } from "nano-account-crawler/dist/nano-interfaces";
 import { NanoAccountForwardCrawler } from "nano-account-crawler/dist/nano-account-forward-crawler";
+import { TAccount } from "../../types/banano";
 
 // State for when send#atomic_swap is confirmed and receive#atomic_swap is ready to be received but hasn't been confirmed yet.
 export async function pendingDelegationAddNextAssetBlock(assetCrawler: AssetCrawler): Promise<boolean> {
   const sendDelegation = assetCrawler.frontier;
   const sendDelegationHash = sendDelegation.nanoBlock.hash;
-  const atomicSwapDelegationConditions: IAtomicSwapConditions = parseAtomicSwapRepresentative(sendDelegation.nanoBlock.representative);
+  const sendDelegationRepresentative: TAccount = sendDelegation.nanoBlock.representative as TAccount;
+  const atomicSwapDelegationConditions: IAtomicSwapConditions = parseAtomicSwapRepresentative(sendDelegationRepresentative);
 
   // guard
   if (typeof atomicSwapDelegationConditions === 'undefined') {
@@ -47,9 +49,10 @@ export async function pendingDelegationAddNextAssetBlock(assetCrawler: AssetCraw
     blockIndex += 1;
   }
 
-  const blocks = await findBlockAtHeightAndPreviousBlock(recipient, atomicSwapConditions.receiveHeight);
+  const blocks = await findBlockAtHeightAndPreviousBlock(recipient, atomicSwapDelegationConditions.receiveHeight);
   // guard
   if (blocks === undefined) { return false; }
+  if (blocks.length !== 2) { return false; }
 
   //const [previousBlock, receiveBlock] = blocks;
   // NB: Trace length from findBlockAtHeight might be significantly larger than 1.
@@ -57,12 +60,12 @@ export async function pendingDelegationAddNextAssetBlock(assetCrawler: AssetCraw
 
   const isReceive = receiveBlock.subtype === 'receive'
   const receivesAtomicSwap = receiveBlock.link === sendDelegationHash;
-  const hasCorrectHeight = BigInt(receiveBlock.height) === atomicSwapConditions.receiveHeight;
-  const representativeUnchanged = receiveBlock.representative == previousBlock.representative;
+  const hasCorrectHeight = BigInt(receiveBlock.height) === atomicSwapDelegationConditions.receiveHeight;
+  const representativeUnchanged = receiveBlock.representative == blocks[0].representative;
 
   if (isReceive && receivesAtomicSwap && hasCorrectHeight && representativeUnchanged) {
     assetCrawler.assetChain.push({
-      state: 'pending_payment',
+      state: 'delegated_atomic_swap_payable',
       type: 'receive#atomic_swap',
       account: recipient,
       owner: sender,
@@ -73,7 +76,7 @@ export async function pendingDelegationAddNextAssetBlock(assetCrawler: AssetCraw
   } else {
     // Atomic swap conditions were not met. Start chain from send#atomic_swap with new state.
     assetCrawler.assetChain.push({
-      state: 'cancel_atomic_swap',
+      state: '(return_to_nft_seller)',
       type: 'receive#atomic_swap',
       account: recipient,
       owner: sender,
@@ -82,12 +85,12 @@ export async function pendingDelegationAddNextAssetBlock(assetCrawler: AssetCraw
       traceLength: assetCrawler.traceLength
     });
     assetCrawler.assetChain.push({
-      state: 'owned',
+      state: 'delegated',
       type: 'send#atomic_swap',
-      account: sendAtomicSwap.account,
-      owner: sendAtomicSwap.account,
+      account: sendDelegation.account,
+      owner: sendDelegation.account,
       locked: false,
-      nanoBlock: sendAtomicSwap.nanoBlock,
+      nanoBlock: sendDelegation.nanoBlock,
       traceLength: assetCrawler.traceLength
     });
   }

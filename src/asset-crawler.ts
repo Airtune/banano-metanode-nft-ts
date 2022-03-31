@@ -3,6 +3,9 @@ import { INanoBlock } from "nano-account-crawler/dist/nano-interfaces";
 import { IAssetBlock } from "./interfaces/asset-block";
 import { IAtomicSwapConditions } from "./interfaces/atomic-swap-conditions";
 
+// types
+import { TAccount } from "./types/banano";
+
 // packages
 import { NanoNode } from 'nano-account-crawler/dist/nano-node';
 import { NanoAccountForwardCrawler } from "nano-account-crawler/dist/nano-account-forward-crawler";
@@ -61,10 +64,11 @@ export class AssetCrawler {
   }
 
   async crawl() {
-    await firstMintAddNextAssetBlocks(this, this._mintBlock);
     this._assetRepresentative = bananoIpfs.publicKeyToAccount(this._mintBlock.hash);
     this._metadataRepresentative = this._mintBlock.representative;
     this._traceLength = BigInt(1);
+
+    await firstMintAddNextAssetBlocks(this, this._mintBlock);
 
     while (await this.addNextFrontierToAssetChain()) {
       if (this._traceLength >= MAX_TRACE_LENGTH) {
@@ -81,6 +85,30 @@ export class AssetCrawler {
     } else {
       throw Error(`UnhandledAssetState: "${this.frontier.state}" was not handled for block: ${this.frontier.nanoBlock.hash}`);
     }
+  }
+
+  public findSendAtomicSwapBlock(): IAssetBlock | undefined {
+    if (this.assetChain[this.assetChain.length - 2].state !== "atomic_swap_receivable") {
+      return undefined;
+    }
+
+    const sendAtomicSwap: IAssetBlock = this.assetChain[this.assetChain.length - 2];
+    return sendAtomicSwap;
+  }
+
+  // Return minRaw for atomic swap payment if asset is ready for payment. Otherwise return undefined.
+  public currentAtomicSwapConditions(): IAtomicSwapConditions | undefined {
+    if (this.assetChain[this.assetChain.length - 1].state !== "atomic_swap_payable") {
+      return undefined;
+    }
+
+    const sendAtomicSwap: IAssetBlock = this.findSendAtomicSwapBlock();
+    if (sendAtomicSwap === undefined) { return undefined; }
+
+    const atomicSwapRepresentative: TAccount = sendAtomicSwap.nanoBlock.representative as TAccount;
+    const atomicSwapConditions: IAtomicSwapConditions = parseAtomicSwapRepresentative(atomicSwapRepresentative);
+
+    return atomicSwapConditions;
   }
 
   public get assetChain() {

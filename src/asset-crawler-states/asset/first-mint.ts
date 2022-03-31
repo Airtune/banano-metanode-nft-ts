@@ -1,13 +1,15 @@
 import { AssetCrawler } from "../../asset-crawler";
 import { INanoBlock } from "nano-account-crawler/dist/nano-interfaces";
+import { getBananoAccount } from "../../lib/get-banano-account";
 
 export async function firstMintAddNextAssetBlocks(assetCrawler: AssetCrawler, _mintBlock: INanoBlock): Promise<boolean> {
   if (_mintBlock.subtype == 'send' && _mintBlock.type === 'state') {
+    let recipientAccount = getBananoAccount(_mintBlock.link);
     assetCrawler.assetChain.push({
       state: 'receivable',
       type: 'send#mint',
       account: assetCrawler.issuer,
-      owner: assetCrawler.issuer,
+      owner: recipientAccount,
       locked: false,
       nanoBlock: _mintBlock,
       traceLength: assetCrawler.traceLength
