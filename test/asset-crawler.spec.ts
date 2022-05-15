@@ -5,6 +5,7 @@ import { bananode } from '../src/bananode';
 import { getBlock } from '../src/lib/get-block';
 import { TAccount, TBlockHash } from '../src/types/banano';
 import { IAssetBlock } from '../src/interfaces/asset-block';
+import { INanoBlock } from 'nano-account-crawler/dist/nano-interfaces';
 
 chai.use(chaiAsPromised);
 const expect = chai.expect;
@@ -188,15 +189,23 @@ describe('AssetCrawler', function() {
   });
 
   it("cancels atomic swap if paying account balance is less than min raw in block at: receive height - 1", async () => {
-    expect(swapAssetCrawler.assetChain[2].nanoBlock.hash).to.equal("F8BD752EDB490FC4B505ED878981240A79DB5C0490F7242388EF5E183E17EF29");
-    expect(swapAssetCrawler.assetChain[2].owner).to.equal("ban_1swapxh34bjstbc8c5tonbncw5nrc6sgk7h71bxtetty3huiqcj6mja9rxjt");
-    expect(swapAssetCrawler.assetChain[2].state).to.equal("owned");
-    expect(swapAssetCrawler.assetChain[2].type).to.equal("send#returned_to_sender");
+    expect(swapAssetCrawler.frontier.nanoBlock.hash).to.equal("F8BD752EDB490FC4B505ED878981240A79DB5C0490F7242388EF5E183E17EF29");
+    expect(swapAssetCrawler.frontier.owner).to.equal("ban_1swapxh34bjstbc8c5tonbncw5nrc6sgk7h71bxtetty3huiqcj6mja9rxjt");
+    expect(swapAssetCrawler.frontier.state).to.equal("owned");
+    expect(swapAssetCrawler.frontier.type).to.equal("send#returned_to_sender");
   });
 
   // Todo: check if there's other variables that can change the block hash to break the atomic swap
   it("cancels atomic swap if receive#atomic_swap block has a different representative than previous block", async () => {
+    let failSwapIssuer: TAccount = "ban_1swapxh34bjstbc8c5tonbncw5nrc6sgk7h71bxtetty3huiqcj6mja9rxjt";
+    let failSwapMintBlock: INanoBlock = await getBlock(failSwapIssuer, "09ABEBF530CD96A30FA4F58B458AB7378DF6432CFC39040F6224195A006D65BA");
+    let failSwapAssetCrawler = new AssetCrawler(bananode, failSwapIssuer, failSwapMintBlock);
+    await failSwapAssetCrawler.crawl();
 
+    expect(failSwapAssetCrawler.frontier.nanoBlock.hash).to.equal("2EEFFD2621E2260255F200131B3CAF3D25271076DB5E8AE856DCE8BBB2DC1875");
+    expect(failSwapAssetCrawler.frontier.owner).to.equal("ban_1swapxh34bjstbc8c5tonbncw5nrc6sgk7h71bxtetty3huiqcj6mja9rxjt");
+    expect(failSwapAssetCrawler.frontier.state).to.equal("owned");
+    expect(failSwapAssetCrawler.frontier.type).to.equal("send#returned_to_sender");
   });
 
   it("cancels atomic swap if a block other than the relevant receive#atomic_swap is confirmed at receive_height");
