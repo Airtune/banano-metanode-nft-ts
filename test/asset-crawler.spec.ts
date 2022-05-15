@@ -3,16 +3,18 @@ import * as chaiAsPromised from 'chai-as-promised';
 import { AssetCrawler } from '../src/asset-crawler';
 import { bananode } from '../src/bananode';
 import { getBlock } from '../src/lib/get-block';
-import { TAccount } from '../src/types/banano';
+import { TAccount, TBlockHash } from '../src/types/banano';
 import { IAssetBlock } from '../src/interfaces/asset-block';
 
 chai.use(chaiAsPromised);
 const expect = chai.expect;
 
-
 describe('AssetCrawler', function() {
+  let issuer: TAccount = "ban_1ty5s13h9tg9f57gwsto8njkzejfu9tjasc8a9mn1wujfxib8dj7w54jg3qm";
+  // IPFS CID: QmPDFGyV7QKdT4MvV8vhuvPYsDoy66KxqDzB93mpne6tQ5
+  // Corresponding Metadata Representative: ban_159p616fwg36pynrh3i4b3p6qg4oxxxemypxgz6ubzid65kbcd4y4kpu5p6b
+
   it("confirms change#mint, send#asset, receive#asset", async () => {
-    let issuer: TAccount = "ban_1ty5s13h9tg9f57gwsto8njkzejfu9tjasc8a9mn1wujfxib8dj7w54jg3qm";
     let recipient: TAccount = "ban_1twos81eoq9s6d1asht5wwz53m9kw7hkuajad1m4u5otgcsb4qstymquhahf";
     let mintBlockHash = "F61CCF94D6E5CFE9601C436ACC3976AF876D1DA21909FEB88B629BEDEC4DF1EA";
     let mintBlock = await getBlock(issuer, mintBlockHash);
@@ -27,7 +29,6 @@ describe('AssetCrawler', function() {
   });
 
   it("confirms send#mint, receive#asset", async () => {
-    let issuer: TAccount = "ban_1ty5s13h9tg9f57gwsto8njkzejfu9tjasc8a9mn1wujfxib8dj7w54jg3qm";
     let recipient: TAccount = "ban_1twos81eoq9s6d1asht5wwz53m9kw7hkuajad1m4u5otgcsb4qstymquhahf";
     let mintBlockHash = "EFE6CCFDE4FD56E60F302F22DCF41E736F611124E3F463135FDC31769A68B970";
     let mintBlock = await getBlock(issuer, mintBlockHash);
@@ -42,7 +43,6 @@ describe('AssetCrawler', function() {
   });
 
   it("unreceived change#mint, send#asset is owned by recipient but not sendable", async () => {
-    let issuer: TAccount = "ban_1ty5s13h9tg9f57gwsto8njkzejfu9tjasc8a9mn1wujfxib8dj7w54jg3qm";
     let recipient: TAccount = "ban_1twos81eoq9s6d1asht5wwz53m9kw7hkuajad1m4u5otgcsb4qstymquhahf";
     let mintBlockHash = "88A047DA0CF8A07568D8E3BEC6030587988A11581906CBBF372DE32385F35F16";
     let mintBlock = await getBlock(issuer, mintBlockHash);
@@ -57,7 +57,6 @@ describe('AssetCrawler', function() {
   });
 
   it("unreceived send#mint is owned by recipient but not sendable", async () => {
-    let issuer: TAccount = "ban_1ty5s13h9tg9f57gwsto8njkzejfu9tjasc8a9mn1wujfxib8dj7w54jg3qm";
     let recipient: TAccount = "ban_1twos81eoq9s6d1asht5wwz53m9kw7hkuajad1m4u5otgcsb4qstymquhahf";
     let mintBlockHash = "D051A922C775616CADC97EB29FD6D75AA514D05ABA4A1252F8B626C9C4F863E8";
     let mintBlock = await getBlock(issuer, mintBlockHash);
@@ -72,7 +71,6 @@ describe('AssetCrawler', function() {
   });
 
   it("is unable to send assets owned by someone else", async () => {
-    let issuer: TAccount = "ban_1ty5s13h9tg9f57gwsto8njkzejfu9tjasc8a9mn1wujfxib8dj7w54jg3qm";
     let unrelatedAccount1: TAccount = "ban_1twos81eoq9s6d1asht5wwz53m9kw7hkuajad1m4u5otgcsb4qstymquhahf";
     let unrelatedAccount2: TAccount = "ban_1oozinhbrw7nrjfmtq1roybi8t7q7jywwne4pjto7oy78injdmn4n3a5w5br";
     let mintBlockHash = "777B8264AFDF004C77285CBBA7F208D2BB5A64118FBB5DCCA7D2619374CB3C4A";
@@ -95,7 +93,6 @@ describe('AssetCrawler', function() {
   });
 
   it("ignores send#asset block for asset you have already sent with a send#mint block", async () => {
-    let issuer: TAccount = "ban_1ty5s13h9tg9f57gwsto8njkzejfu9tjasc8a9mn1wujfxib8dj7w54jg3qm";
     let mintBlockHash = "6F7ED78C5A40145EDCA76B63B1F525DC38A6A4597D59274FBEEED32619C8AF43";
     let mintBlock = await getBlock(issuer, mintBlockHash);
     let assetCrawler = new AssetCrawler(bananode, issuer, mintBlock);
@@ -106,7 +103,6 @@ describe('AssetCrawler', function() {
   });
 
   it("traces chain of sends", async () => {
-    let issuer: TAccount = "ban_1ty5s13h9tg9f57gwsto8njkzejfu9tjasc8a9mn1wujfxib8dj7w54jg3qm";
     // send#mint
     let mintBlockHash = "87F0D105A36BA43C87AF399B84B8BBF8EED0BDD71279AACC33496809D5E28B66";
     let mintBlock = await getBlock(issuer, mintBlockHash);
@@ -137,14 +133,54 @@ describe('AssetCrawler', function() {
     expect(assetCrawler.frontier.owner).to.equal("ban_1oozinhbrw7nrjfmtq1roybi8t7q7jywwne4pjto7oy78injdmn4n3a5w5br");
   });
 
-  it("ignores send#asset before the receive block for the asset has been confirmed");
+  it("ignores send#asset before receive#asset and after previously confirmed send#asset", async () => {
+    // send#mint
+    let mintBlockHash = "68EB50EF45651590ECC6136D20BBC8D68ECF0C352FC50DBFEC00C3DB3F5F934D";
+    let mintBlock = await getBlock(issuer, mintBlockHash);
+    let assetCrawler = new AssetCrawler(bananode, issuer, mintBlock);
+    await assetCrawler.crawl();
 
-  it("ignores send#asset block for asset you have already sent with a send#asset block");
+    const assetChain: IAssetBlock[] = assetCrawler.assetChain;
 
-  it("ignores send#mint blocks before initializing supply and mint blocks");
+    // ignore send#asset block before receive#asset
+    for (let i = 0; i < assetChain.length; i++) {
+      const assetBlock = assetChain[i];
+      const invalidSendHashes = [
+        // before receive#asset
+        "A21E26AC888B642F84FAF3728A6D32B027502CE9F1F86F720B91A71D49BFE52C", 
+        "05CF4BEA4075DFBE690E9EC0DF581CC237D9C14AF7CEECDE9E53F1426AD0F572",
+        "1D065B49CC53BB693438F55C068E74BBF36DBE6C409C82EB537EFEF257EF6104",
+        // send#asset after previously confirmed send#asset
+        "62DCF26825FA44C394D1C468BCB6B69E779C9E17899DB04B4489C33FB58057EF"
+      ]
+      expect(invalidSendHashes).to.not.include(assetBlock.nanoBlock.hash);
+    }
+
+    // previously confirmed send#asset 
+    expect(assetChain[2].type).to.equal("send#asset");
+    expect(assetChain[2].owner).to.equal("ban_3testz6spgm48ax8kcwah6swo59sroqfn94fqsgq368z7ki44ccg8hhrx3x8");
+    expect(assetChain[2].nanoBlock.hash).to.equal("31C4279ACE505BFACE38BBE4883B1D928C7742BE0C042FF92C8D69C6C8D4B1E1");
+  });
+
+  it("confirms completed valid atomic swap", async () => {
+    let swapIssuer: TAccount = "ban_1swapxh34bjstbc8c5tonbncw5nrc6sgk7h71bxtetty3huiqcj6mja9rxjt";
+    let mintBlockHash: TBlockHash = "01C876EE1CB115E166BF96FB1218EE0107CF07B6F9FD62ED02A40062360DF20A";
+    let mintBlock = await getBlock(swapIssuer, mintBlockHash);
+    let assetCrawler = new AssetCrawler(bananode, swapIssuer, mintBlock);
+    await assetCrawler.crawl();
+
+    expect(assetCrawler.frontier.nanoBlock.hash).to.equal("E8285EBCF17C5FD0DFDCE086253A72D4795032FB5E23F8D13880954D8BB8AE56");
+    expect(assetCrawler.frontier.owner).to.equal("ban_1buyayd6csb1rwprgcks9sif66hthrbu9jah5ehspmsxghi63ter8f66cy1p");    
+  });
+
+  it("ignores invalid send#atomic_swap if encoded receive height is less than 2");
+
+  it("cancels atomic swap if paying account balance is less than min raw in block at block height: encoded receive height - 1");
 
   // Todo: check if there's other variables that can change the block hash to break the atomic swap
-  it("cancels atomic swap if receive#atomic_swap block has a different representative than previous block");
+  it("cancels atomic swap if receive#atomic_swap block has a different representative than previous block", async () => {
+
+  });
 
   it("cancels atomic swap if a block other than the relevant receive#atomic_swap is confirmed at receive_height");
 

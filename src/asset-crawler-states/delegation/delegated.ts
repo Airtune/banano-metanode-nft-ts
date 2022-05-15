@@ -1,6 +1,6 @@
 import { AssetCrawler } from "../../asset-crawler";
 
-export async function delegatedAddNextAssetBlock(assetCrawler: AssetCrawler): Promise<boolean> {
+export async function delegatedCrawl(assetCrawler: AssetCrawler): Promise<boolean> {
   // !!!
   return false;
 }

@@ -1,7 +1,7 @@
 import { findReceiveBlock } from "../../lib/find-receive-block";
 import { AssetCrawler } from "../../asset-crawler";
 
-export async function receivableAddNextAssetBlock(assetCrawler: AssetCrawler): Promise<boolean> {
+export async function receivableCrawl(assetCrawler: AssetCrawler): Promise<boolean> {
   const sendBlockHash = assetCrawler.frontier.nanoBlock.hash;
   const sender = assetCrawler.frontier.account;
   const recipient = assetCrawler.frontier.owner;

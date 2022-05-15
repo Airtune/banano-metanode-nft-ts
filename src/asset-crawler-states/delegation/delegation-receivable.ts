@@ -9,7 +9,7 @@ import { NanoAccountForwardCrawler } from "nano-account-crawler/dist/nano-accoun
 import { TAccount } from "../../types/banano";
 
 // State for when send#atomic_swap is confirmed and receive#atomic_swap is ready to be received but hasn't been confirmed yet.
-export async function pendingDelegationAddNextAssetBlock(assetCrawler: AssetCrawler): Promise<boolean> {
+export async function pendingDelegationCrawl(assetCrawler: AssetCrawler): Promise<boolean> {
   const sendDelegation = assetCrawler.frontier;
   const sendDelegationHash = sendDelegation.nanoBlock.hash;
   const sendDelegationRepresentative: TAccount = sendDelegation.nanoBlock.representative as TAccount;

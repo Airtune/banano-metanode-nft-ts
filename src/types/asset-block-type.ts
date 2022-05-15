@@ -13,6 +13,7 @@ export type TAssetBlockType = "change#mint" | // #mint
                               "receive#abort_payment" |
                               "send#payment" | // #payment
                               "send#atomic_swap_delegation" | // #atomic_swap_delegation
+                              "send#returned_to_sender" |
                               "receive#atomic_swap_delegation" |
                               "send#abort_delegation" | // #abort_delegation
                               "receive#abort_delegation" |

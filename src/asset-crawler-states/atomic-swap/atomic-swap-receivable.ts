@@ -5,7 +5,7 @@ import { findBlockAtHeightAndPreviousBlock } from "../../lib/find-block-at-heigh
 import { TAccount } from "../../types/banano";
 
 // State for when send#atomic_swap is confirmed and receive#atomic_swap is ready to be received but hasn't been confirmed yet.
-export async function atomicSwapReceivableAddNextAssetBlock(assetCrawler: AssetCrawler): Promise<boolean> {
+export async function atomicSwapReceivableCrawl(assetCrawler: AssetCrawler): Promise<boolean> {
   const sendAtomicSwap = assetCrawler.frontier;
   const sendAtomicSwapHash = sendAtomicSwap.nanoBlock.hash;
   const representative = sendAtomicSwap.nanoBlock.representative as TAccount;
@@ -53,7 +53,7 @@ export async function atomicSwapReceivableAddNextAssetBlock(assetCrawler: AssetC
     });
     assetCrawler.assetChain.push({
       state: 'owned',
-      type: 'send#atomic_swap',
+      type: 'send#returned_to_sender',
       account: sendAtomicSwap.account,
       owner: sendAtomicSwap.account,
       locked: false,

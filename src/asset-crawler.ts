@@ -18,25 +18,27 @@ import { MAX_TRACE_LENGTH } from "./constants";
 import { parseAtomicSwapRepresentative } from "./block-parsers/atomic-swap";
 
 // meta block states
-import { firstMintAddNextAssetBlocks } from "./asset-crawler-states/asset/first-mint";
-import { ownedAddNextAssetBlock } from "./asset-crawler-states/asset/owned";
-import { receivableAddNextAssetBlock } from "./asset-crawler-states/asset/receivable";
-import { atomicSwapReceivableAddNextAssetBlock } from "./asset-crawler-states/atomic-swap/atomic-swap-receivable";
-import { pendingPaymentAddNextAssetBlock } from "./asset-crawler-states/atomic-swap/atomic-swap-payable";
-import { pendingDelegationAddNextAssetBlock } from "./asset-crawler-states/delegation/delegation-receivable";
-import { delegatedAddNextAssetBlock } from "./asset-crawler-states/delegation/delegated";
-import { delegatedAtomicSwapReceivableAddNextAssetBlock } from "./asset-crawler-states/delegation/delegated-atomic-swap-receivable";
-import { delegatedAtomicSwapPayableAddNextAssetBlock } from "./asset-crawler-states/delegation/delegated-atomic-swap-payable";
+import { assetMintCrawl } from "./asset-crawler-states/asset/first-mint";
+import { ownedCrawl } from "./asset-crawler-states/asset/owned";
+import { receivableCrawl } from "./asset-crawler-states/asset/receivable";
+import { atomicSwapReceivableCrawl } from "./asset-crawler-states/atomic-swap/atomic-swap-receivable";
+import { pendingPaymentCrawl } from "./asset-crawler-states/atomic-swap/atomic-swap-payable";
+import { pendingDelegationCrawl } from "./asset-crawler-states/delegation/delegation-receivable";
+import { delegatedCrawl } from "./asset-crawler-states/delegation/delegated";
+import { delegatedAtomicSwapReceivableCrawl } from "./asset-crawler-states/delegation/delegated-atomic-swap-receivable";
+import { delegatedAtomicSwapPayableCrawl } from "./asset-crawler-states/delegation/delegated-atomic-swap-payable";
+import { returnToNFTSellerCrawl } from "./asset-crawler-states/return-to-nft-seller";
 
-const addNextAssetBlockForState = {
-  "owned": ownedAddNextAssetBlock,
-  "receivable": receivableAddNextAssetBlock,
-  "atomic_swap_receivable": atomicSwapReceivableAddNextAssetBlock,
-  "atomic_swap_payable": pendingPaymentAddNextAssetBlock,
-  "delegation_receivable": pendingDelegationAddNextAssetBlock,
-  "delegated": delegatedAddNextAssetBlock,
-  "delegated_atomic_swap_receivable": delegatedAtomicSwapReceivableAddNextAssetBlock,
-  "delegated_atomic_swap_payable": delegatedAtomicSwapPayableAddNextAssetBlock
+const assetCrawlerStates = {
+  "owned": ownedCrawl,
+  "receivable": receivableCrawl,
+  "atomic_swap_receivable": atomicSwapReceivableCrawl,
+  "atomic_swap_payable": pendingPaymentCrawl,
+  "delegation_receivable": pendingDelegationCrawl,
+  "delegated": delegatedCrawl,
+  "delegated_atomic_swap_receivable": delegatedAtomicSwapReceivableCrawl,
+  "delegated_atomic_swap_payable": delegatedAtomicSwapPayableCrawl,
+  "(return_to_nft_seller)": returnToNFTSellerCrawl
 };
 
 // Crawler to trace the chain following a single mint of an asset.
@@ -68,32 +70,23 @@ export class AssetCrawler {
     this._metadataRepresentative = this._mintBlock.representative;
     this._traceLength = BigInt(1);
 
-    await firstMintAddNextAssetBlocks(this, this._mintBlock);
+    await assetMintCrawl(this, this._mintBlock);
 
-    while (await this.addNextFrontierToAssetChain()) {
+    while (await this.crawlStep()) {
       if (this._traceLength >= MAX_TRACE_LENGTH) {
         break;
       }
     }
   }
 
-  private async addNextFrontierToAssetChain(): Promise<boolean> {
-    const addNextAssetBlock = addNextAssetBlockForState[this.frontier.state];
+  private async crawlStep(): Promise<boolean> {
+    const stateCrawlFn = assetCrawlerStates[this.frontier.state];
 
-    if (typeof addNextAssetBlock == "function") {
-      return addNextAssetBlock(this);
+    if (typeof stateCrawlFn == "function") {
+      return stateCrawlFn(this);
     } else {
       throw Error(`UnhandledAssetState: "${this.frontier.state}" was not handled for block: ${this.frontier.nanoBlock.hash}`);
     }
-  }
-
-  public findSendAtomicSwapBlock(): IAssetBlock | undefined {
-    if (this.assetChain[this.assetChain.length - 2].state !== "atomic_swap_receivable") {
-      return undefined;
-    }
-
-    const sendAtomicSwap: IAssetBlock = this.assetChain[this.assetChain.length - 2];
-    return sendAtomicSwap;
   }
 
   // Return minRaw for atomic swap payment if asset is ready for payment. Otherwise return undefined.
@@ -109,6 +102,15 @@ export class AssetCrawler {
     const atomicSwapConditions: IAtomicSwapConditions = parseAtomicSwapRepresentative(atomicSwapRepresentative);
 
     return atomicSwapConditions;
+  }
+
+  public findSendAtomicSwapBlock(): IAssetBlock | undefined {
+    if (this.assetChain[this.assetChain.length - 2].state !== "atomic_swap_receivable") {
+      return undefined;
+    }
+
+    const sendAtomicSwap: IAssetBlock = this.assetChain[this.assetChain.length - 2];
+    return sendAtomicSwap;
   }
 
   public get assetChain() {

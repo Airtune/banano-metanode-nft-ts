@@ -9,7 +9,7 @@ import { TAccount } from "../../types/banano";
 import { IAssetBlock } from "../../interfaces/asset-block";
 
 // State for when receive#atomic_swap is confirmed but send#payment hasn't been sent yet.
-export async function pendingPaymentAddNextAssetBlock(assetCrawler: AssetCrawler): Promise<boolean> {
+export async function pendingPaymentCrawl(assetCrawler: AssetCrawler): Promise<boolean> {
   const paymentAccount = assetCrawler.frontier.account;
   const paymentHeight = BigInt(assetCrawler.frontier.nanoBlock.height) + BigInt(1);
   const [previousBlock, nextBlock]: [INanoBlock, INanoBlock] = await findBlockAtHeightAndPreviousBlock(paymentAccount, paymentHeight);
@@ -64,7 +64,7 @@ export async function pendingPaymentAddNextAssetBlock(assetCrawler: AssetCrawler
     });
     assetCrawler.assetChain.push({
       state: "owned",
-      type: "send#atomic_swap", // essentially ignored because state is owned
+      type: "send#returned_to_sender", // essentially ignored because state is owned
       account: sendAtomicSwap.account,
       owner: sendAtomicSwap.account,
       locked: false,

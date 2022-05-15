@@ -22,5 +22,7 @@ export const sendBananoCmd = async (accountCache: AccountCache, representative: 
   block.work      = await workPromise;
 
   const blockHash = await processBlock(block, "send", "send Banano");
+  // TODO: Calculate new accountState and representative. Validate it isn't cancelling atomic swaps.
+  accountCache.updateInfo(blockHash, balanceRaw - amountRaw, accountCache.accountState, await accountCache.getRepresentative());
   return blockHash;
 };

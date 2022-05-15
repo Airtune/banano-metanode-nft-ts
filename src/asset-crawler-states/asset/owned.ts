@@ -19,7 +19,7 @@ import { parseAtomicSwapRepresentative } from "../../block-parsers/atomic-swap";
 import { TAccount } from "../../types/banano";
 
 // State for when the the block's account own the asset.
-export async function ownedAddNextAssetBlock(assetCrawler: AssetCrawler): Promise<boolean> {
+export async function ownedCrawl(assetCrawler: AssetCrawler): Promise<boolean> {
   // trace forward in account history from frontier block
   let frontierCrawler = new NanoAccountForwardCrawler(assetCrawler.nanoNode, assetCrawler.frontier.account, assetCrawler.frontier.nanoBlock.hash, "1");
   await frontierCrawler.initialize();

@@ -19,51 +19,6 @@ import { parseAtomicSwapRepresentative } from "../../block-parsers/atomic-swap";
 import { TAccount } from "../../types/banano";
 
 // State for when the the block's account own the asset.
-export async function burnedAddNextAssetBlock(assetCrawler: AssetCrawler): Promise<boolean> {
+export async function burnedCrawl(assetCrawler: AssetCrawler): Promise<boolean> {
   return false;
-}
-
-function toAssetBlock(assetCrawler: AssetCrawler, block: INanoBlock): (IAssetBlock|undefined) {
-  if (block.type !== 'state') { return undefined; }
-
-  if (block.subtype === 'send') {
-    if (block.representative === assetCrawler.assetRepresentative) {
-      const recipient = block.account;
-      let state: TAssetState;
-      let type: TAssetBlockType;
-      if (BURN_ACCOUNTS.includes(recipient)) {
-        state = "burned";
-        type = "send#burn";
-      } else {
-        state = "receivable";
-        type = "send#asset";
-      }
-      return {
-        state: state,
-        type: type,
-        account: assetCrawler.frontier.account,
-        owner: block.account,
-        locked: false,
-        nanoBlock: block,
-        traceLength: assetCrawler.traceLength
-      };
-    }
-
-    const representative = block.representative as TAccount;
-    const atomicSwapConditions: IAtomicSwapConditions = parseAtomicSwapRepresentative(representative);
-    const ownershipBlockHeight = BigInt(assetCrawler.frontier.nanoBlock.height);
-    if (atomicSwapConditions && atomicSwapConditions.assetHeight === ownershipBlockHeight) {
-      return {
-        state: 'atomic_swap_receivable',
-        type: 'send#atomic_swap',
-        account: assetCrawler.frontier.account,
-        owner: assetCrawler.frontier.account,
-        locked: true,
-        nanoBlock: block,
-        traceLength: assetCrawler.traceLength
-      };
-    }
-  }
-
-  return undefined;
 }
