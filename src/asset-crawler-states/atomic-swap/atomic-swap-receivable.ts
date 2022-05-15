@@ -14,16 +14,33 @@ export async function atomicSwapReceivableCrawl(assetCrawler: AssetCrawler): Pro
   if (typeof atomicSwapConditions === 'undefined') {
     throw Error(`AtomicSwapError: Unable to parse conditions for representative: ${sendAtomicSwap.nanoBlock.representative}`);
   }
-  
+
+  // guard check if paying account doesn't have enough raw.
   const sender = sendAtomicSwap.account;
   const recipient = sendAtomicSwap.nanoBlock.account;
-  const blocks = await findBlockAtHeightAndPreviousBlock(recipient, atomicSwapConditions.receiveHeight);
-  // guard
-  if (blocks === undefined) { return false; }
 
-  const [previousBlock, receiveBlock] = blocks;
   // NB: Trace length from findBlockAtHeight might be significantly larger than 1.
   assetCrawler.traceLength += BigInt(1);
+  const blocks = await findBlockAtHeightAndPreviousBlock(recipient, atomicSwapConditions.receiveHeight);
+  const [previousBlock, receiveBlock] = blocks;
+
+  if (previousBlock === undefined) { return false; }
+  if (BigInt(previousBlock.balance) < atomicSwapConditions.minRaw) {
+    assetCrawler.assetChain.push({
+      state: "owned",
+      type: "send#returned_to_sender",
+      account: sendAtomicSwap.account,
+      owner: sendAtomicSwap.account,
+      locked: false,
+      nanoBlock: sendAtomicSwap.nanoBlock,
+      traceLength: assetCrawler.traceLength
+    });
+
+    return true;
+  }
+  
+  // guard
+  if (receiveBlock === undefined) { return false; }
 
   const isReceive = receiveBlock.subtype === 'receive'
   const receivesAtomicSwap = receiveBlock.link === sendAtomicSwapHash;

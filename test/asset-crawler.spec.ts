@@ -10,9 +10,19 @@ chai.use(chaiAsPromised);
 const expect = chai.expect;
 
 describe('AssetCrawler', function() {
+  this.timeout(5000);
   let issuer: TAccount = "ban_1ty5s13h9tg9f57gwsto8njkzejfu9tjasc8a9mn1wujfxib8dj7w54jg3qm";
+  let swapIssuer: TAccount = "ban_1swapxh34bjstbc8c5tonbncw5nrc6sgk7h71bxtetty3huiqcj6mja9rxjt";
+  let swapMintBlock;
+  let swapAssetCrawler;
+  
   // IPFS CID: QmPDFGyV7QKdT4MvV8vhuvPYsDoy66KxqDzB93mpne6tQ5
   // Corresponding Metadata Representative: ban_159p616fwg36pynrh3i4b3p6qg4oxxxemypxgz6ubzid65kbcd4y4kpu5p6b
+  before(async () => {
+    swapMintBlock = await getBlock(swapIssuer, "439F5CB566E957576C2473B7AF6F3D7D17FBF5022685EB70ED825EAC3B84A56A");
+    swapAssetCrawler = new AssetCrawler(bananode, swapIssuer, swapMintBlock);
+    await swapAssetCrawler.crawl();
+  });
 
   it("confirms change#mint, send#asset, receive#asset", async () => {
     let recipient: TAccount = "ban_1twos81eoq9s6d1asht5wwz53m9kw7hkuajad1m4u5otgcsb4qstymquhahf";
@@ -173,9 +183,16 @@ describe('AssetCrawler', function() {
     expect(assetCrawler.frontier.owner).to.equal("ban_1buyayd6csb1rwprgcks9sif66hthrbu9jah5ehspmsxghi63ter8f66cy1p");    
   });
 
-  it("ignores invalid send#atomic_swap if encoded receive height is less than 2");
+  it("ignores invalid send#atomic_swap if encoded receive height is less than 2", async () => {
+    expect(swapAssetCrawler.assetChain.length).to.equal(3);
+  });
 
-  it("cancels atomic swap if paying account balance is less than min raw in block at block height: encoded receive height - 1");
+  it("cancels atomic swap if paying account balance is less than min raw in block at: receive height - 1", async () => {
+    expect(swapAssetCrawler.assetChain[2].nanoBlock.hash).to.equal("F8BD752EDB490FC4B505ED878981240A79DB5C0490F7242388EF5E183E17EF29");
+    expect(swapAssetCrawler.assetChain[2].owner).to.equal("ban_1swapxh34bjstbc8c5tonbncw5nrc6sgk7h71bxtetty3huiqcj6mja9rxjt");
+    expect(swapAssetCrawler.assetChain[2].state).to.equal("owned");
+    expect(swapAssetCrawler.assetChain[2].type).to.equal("send#returned_to_sender");
+  });
 
   // Todo: check if there's other variables that can change the block hash to break the atomic swap
   it("cancels atomic swap if receive#atomic_swap block has a different representative than previous block", async () => {
@@ -186,7 +203,7 @@ describe('AssetCrawler', function() {
 
   it("cancels atomic swap if a block other than send#payment follows receive#atomic_swap");
 
-  it("cancels atomic swap if send#payment sends too little raw");
+  it("cancels atomic swap if send#payment sends too little raw to the right account");
 
-  it("cancels atomic swap if send#payment sends to the wrong account");
+  it("cancels atomic swap if send#payment sends enough raw to the wrong account");
 });

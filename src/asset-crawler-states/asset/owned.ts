@@ -67,7 +67,9 @@ function toAssetBlock(assetCrawler: AssetCrawler, block: INanoBlock): (IAssetBlo
     const atomicSwapConditions: IAtomicSwapConditions = parseAtomicSwapRepresentative(representative);
     const ownershipBlockHeight = BigInt(assetCrawler.frontier.nanoBlock.height);
     const attemptTradeWithSelf = block.account == assetCrawler.frontier.owner;
-    if (!attemptTradeWithSelf && atomicSwapConditions && atomicSwapConditions.assetHeight === ownershipBlockHeight) {
+    const validReceiveHeight   = atomicSwapConditions && atomicSwapConditions.receiveHeight >= BigInt(2);
+    const currentAssetHeight   = atomicSwapConditions && atomicSwapConditions.assetHeight === ownershipBlockHeight
+    if (!attemptTradeWithSelf && validReceiveHeight && currentAssetHeight) {
       return {
         state: 'atomic_swap_receivable',
         type: 'send#atomic_swap',

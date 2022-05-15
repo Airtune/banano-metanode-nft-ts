@@ -9,6 +9,9 @@ import { generateBananoSendBlock } from "./banano-send";
 
 // https://github.com/Airtune/73-meta-tokens/blob/main/meta_ledger_protocol/atomic_swap.md
 export const generateSendAtomicSwapRepresentative = (assetHeight: bigint, receiveHeight: bigint, minRaw: bigint, delegation: boolean = false) => {
+  if (receiveHeight <= 1) {
+    throw Error(`send#atomic_swap representative is invalid. Must be above 1. Got: ${receiveHeight}`);
+  }
   const assetHeightHex   = toFixedLengthPositiveHex(assetHeight, 10);
   const receiveHeightHex = toFixedLengthPositiveHex(receiveHeight, 10);
   const minRawHex        = toFixedLengthPositiveHex(minRaw, 31);

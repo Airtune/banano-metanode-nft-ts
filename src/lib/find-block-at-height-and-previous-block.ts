@@ -8,20 +8,19 @@ export async function findBlockAtHeightAndPreviousBlock(account: string, height:
 
   const previousHeight = height - BigInt(1)
 
-  const blocks = [];
+  let previousBlock: INanoBlock = undefined;
+  let block: INanoBlock         = undefined;
 
-  for await (const block of nanoBackwardIterable) {
-    if (BigInt(block.height) === height) {
-      blocks.push(block);
-    } else if (BigInt(block.height) === previousHeight) {
-      blocks.unshift(block)
-      if (blocks.length === 2) {
-        return blocks as [INanoBlock, INanoBlock];
-      } else {
-        return undefined;
-      }
+  for await (const _block of nanoBackwardIterable) {
+    let _height = BigInt(_block.height);
+    if (_height === height) {
+      block = _block;
+    } else if (_height === previousHeight) {
+      previousBlock = _block;
+    } else if (_height < previousHeight) {
+      break;
     }
   }
 
-  return undefined;
+  return [previousBlock, block];
 }
