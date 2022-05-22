@@ -184,9 +184,11 @@ describe('AssetCrawler', function() {
     expect(assetCrawler.frontier.owner).to.equal("ban_1buyayd6csb1rwprgcks9sif66hthrbu9jah5ehspmsxghi63ter8f66cy1p");    
   });
 
-  it("ignores invalid send#atomic_swap if encoded receive height is less than 2", async () => {
+  it("ignores invalid send#atomic_swap where encoded receive height is less than 2", async () => {
     expect(swapAssetCrawler.assetChain.length).to.equal(3);
   });
+  
+  it("ignores invalid send#atomic_swap where exact raw amount sent isn't exactly 1 raw");
 
   it("cancels atomic swap if paying account balance is less than min raw in block at: receive height - 1", async () => {
     expect(swapAssetCrawler.frontier.nanoBlock.hash).to.equal("F8BD752EDB490FC4B505ED878981240A79DB5C0490F7242388EF5E183E17EF29");
@@ -202,17 +204,61 @@ describe('AssetCrawler', function() {
     let failSwapAssetCrawler = new AssetCrawler(bananode, failSwapIssuer, failSwapMintBlock);
     await failSwapAssetCrawler.crawl();
 
+    // The receive block that changes representative and is expected to be invalid is:
+    // CCBBB68F1C216C45F76C175BB2116F97080512C84D0A4830E0186DADFEF56921
     expect(failSwapAssetCrawler.frontier.nanoBlock.hash).to.equal("2EEFFD2621E2260255F200131B3CAF3D25271076DB5E8AE856DCE8BBB2DC1875");
     expect(failSwapAssetCrawler.frontier.owner).to.equal("ban_1swapxh34bjstbc8c5tonbncw5nrc6sgk7h71bxtetty3huiqcj6mja9rxjt");
     expect(failSwapAssetCrawler.frontier.state).to.equal("owned");
     expect(failSwapAssetCrawler.frontier.type).to.equal("send#returned_to_sender");
   });
 
-  it("cancels atomic swap if a block other than the relevant receive#atomic_swap is confirmed at receive_height");
+  it("cancels atomic swap if a block other than the relevant receive#atomic_swap is confirmed at receive_height", async () => {
+    let issuer: TAccount = "ban_3cantszxkej3kzcjjpxcu35jcn6ck884uu3q8ypd3xc1e1y61tt6jj7p99yd";
+    let cantMintBlock1 = await getBlock(issuer, "050D2C75CE68241CF5E3CD180411A73A75A1781D5B2D5BAA26059A06811689A7");
+    let cantAssetCrawler1 = new AssetCrawler(bananode, issuer, cantMintBlock1);
+    await cantAssetCrawler1.crawl();
 
-  it("cancels atomic swap if a block other than send#payment follows receive#atomic_swap");
+    expect(cantAssetCrawler1.frontier.owner).to.equal(issuer);
+    expect(cantAssetCrawler1.frontier.state).to.equal("owned");
+    expect(cantAssetCrawler1.frontier.type).to.equal("send#returned_to_sender");
+    expect(cantAssetCrawler1.frontier.locked).to.equal(false);
+  });
 
-  it("cancels atomic swap if send#payment sends too little raw to the right account");
+  it("cancels atomic swap if a block other than send#payment follows receive#atomic_swap", async () => {
+    let issuer: TAccount = "ban_3cantszxkej3kzcjjpxcu35jcn6ck884uu3q8ypd3xc1e1y61tt6jj7p99yd";
+    let cantMintBlock2 = await getBlock(issuer, "AE29A6AE92A3F78A49D6F1A82C014276FE95140963FCED2410A640A5173A1FC8");
+    let cantAssetCrawler2 = new AssetCrawler(bananode, issuer, cantMintBlock2);
+    await cantAssetCrawler2.crawl();
 
-  it("cancels atomic swap if send#payment sends enough raw to the wrong account");
+    expect(cantAssetCrawler2.frontier.owner).to.equal(issuer);
+    expect(cantAssetCrawler2.frontier.state).to.equal("owned");
+    expect(cantAssetCrawler2.frontier.type).to.equal("send#returned_to_sender");
+    expect(cantAssetCrawler2.frontier.locked).to.equal(false);
+  });
+
+  it("cancels atomic swap if send#payment sends too little raw to the right account", async () => {
+    let issuer: TAccount = "ban_3cantszxkej3kzcjjpxcu35jcn6ck884uu3q8ypd3xc1e1y61tt6jj7p99yd";
+    let cantMintBlock3 = await getBlock(issuer, "B0BB1D5000D4A9E51993968C25A27804FC5551CFB18656B9FD7444D70C496A11");
+    let cantAssetCrawler3 = new AssetCrawler(bananode, issuer, cantMintBlock3);
+    await cantAssetCrawler3.crawl();
+
+    expect(cantAssetCrawler3.frontier.owner).to.equal(issuer);
+    expect(cantAssetCrawler3.frontier.state).to.equal("owned");
+    expect(cantAssetCrawler3.frontier.type).to.equal("send#returned_to_sender");
+    expect(cantAssetCrawler3.frontier.locked).to.equal(false);
+  });
+
+  it("cancels atomic swap if send#payment sends enough raw to the wrong account", async () => {
+    let issuer: TAccount = "ban_3cantszxkej3kzcjjpxcu35jcn6ck884uu3q8ypd3xc1e1y61tt6jj7p99yd";
+    let cantMintBlock4 = await getBlock(issuer, "32A3470B9217D796E16D2CE2445A5FC84F023695B099D2AE6B4B3133FF313CA6");
+    let cantAssetCrawler4 = new AssetCrawler(bananode, issuer, cantMintBlock4);
+    await cantAssetCrawler4.crawl();
+
+    expect(cantAssetCrawler4.frontier.owner).to.equal(issuer);
+    expect(cantAssetCrawler4.frontier.state).to.equal("owned");
+    expect(cantAssetCrawler4.frontier.type).to.equal("send#returned_to_sender");
+    expect(cantAssetCrawler4.frontier.locked).to.equal(false);
+  });
+
+  it("doesn't transfer ownership while send#atomic_swap and receive#atomic swap is confirmed but send#payment or #abort_payment is still pending");
 });

@@ -8,6 +8,18 @@ import { findBlockAtHeightAndPreviousBlock } from "../../lib/find-block-at-heigh
 import { TAccount } from "../../types/banano";
 import { IAssetBlock } from "../../interfaces/asset-block";
 
+function validPayment(previousBlock: INanoBlock, nextBlock: INanoBlock, sendAtomicSwap: IAssetBlock, atomicSwapConditions: IAtomicSwapConditions) {
+  if (nextBlock.subtype !== 'send') {
+    return false;
+  }
+
+  const payedEnough = BigInt(nextBlock.amount) >= atomicSwapConditions.minRaw;
+  const payedCorrectAccount = nextBlock.account === sendAtomicSwap.owner;
+  const representativeUnchanged = nextBlock.representative === previousBlock.representative;
+
+  return payedEnough && payedCorrectAccount && representativeUnchanged;
+}
+
 // State for when receive#atomic_swap is confirmed but send#payment hasn't been sent yet.
 export async function pendingPaymentCrawl(assetCrawler: AssetCrawler): Promise<boolean> {
   const paymentAccount = assetCrawler.frontier.account;
@@ -25,11 +37,8 @@ export async function pendingPaymentCrawl(assetCrawler: AssetCrawler): Promise<b
   assetCrawler.traceLength += BigInt("1");
 
   const atomicSwapConditions: IAtomicSwapConditions = assetCrawler.currentAtomicSwapConditions();
-  const payedEnough = BigInt(nextBlock.amount) >= atomicSwapConditions.minRaw;
-  const payedCorrectAccount = nextBlock.account === sendAtomicSwap.owner;
-  const representativeUnchanged = nextBlock.representative === previousBlock.representative;
 
-  if (nextBlock.subtype === 'send' && payedCorrectAccount && payedEnough && representativeUnchanged) {
+  if (validPayment(previousBlock, nextBlock, sendAtomicSwap, atomicSwapConditions)) {
     assetCrawler.assetChain.push({
       state: 'owned',
       type: 'send#payment',
