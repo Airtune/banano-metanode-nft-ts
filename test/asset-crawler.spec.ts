@@ -260,5 +260,5 @@ describe('AssetCrawler', function() {
     expect(cantAssetCrawler4.frontier.locked).to.equal(false);
   });
 
-  it("doesn't transfer ownership while send#atomic_swap and receive#atomic swap is confirmed but send#payment or #abort_payment is still pending");
+  it("doesn't transfer ownership while send#atomic_swap and receive#atomic swap is confirmed but send#payment or #abort_payment is still unconfirmed");
 });
