@@ -1,5 +1,7 @@
-export const META_NODE_VERSION = '0.0.0';
+// Version for this library
+export const META_NODE_VERSION = '1.1.0';
 
+// Version for on-chain protocol
 export const META_PROTOCOL_MAJOR = BigInt('1');
 export const META_PROTOCOL_MINOR = BigInt('0');
 export const META_PROTOCOL_PATCH = BigInt('0');
