@@ -11,7 +11,7 @@ chai.use(chaiAsPromised);
 const expect = chai.expect;
 
 describe('AssetCrawler', function() {
-  this.timeout(5000);
+  this.timeout(10000);
   let issuer: TAccount = "ban_1ty5s13h9tg9f57gwsto8njkzejfu9tjasc8a9mn1wujfxib8dj7w54jg3qm";
   let swapIssuer: TAccount = "ban_1swapxh34bjstbc8c5tonbncw5nrc6sgk7h71bxtetty3huiqcj6mja9rxjt";
   let swapMintBlock;
@@ -51,6 +51,57 @@ describe('AssetCrawler', function() {
     expect(assetFrontier.state).to.equal("owned");
     expect(assetFrontier.type).to.equal("receive#asset");
     expect(assetFrontier.locked).to.equal(false);
+  });
+
+  it("send all NFTs command sends all NFTs", async () => {
+    const sendAllIssuer: TAccount = "ban_1sweep4n54fbbrzaj1cnr7drf4udbf6f66un3zikhwm6f497pk5ftar3tekj";
+    const recipient: TAccount = "ban_3testz6spgm48ax8kcwah6swo59sroqfn94fqsgq368z7ki44ccg8hhrx3x8";
+
+    // sent with send all assets command, received
+    const mintBlock1 = await getBlock(sendAllIssuer, "698625D8B57D695D45D4597EF5EEBC7DC31B9A706CCA1D26EAA72F8063B6E385");
+    const nft1AssetCrawler = new AssetCrawler(bananode, sendAllIssuer, mintBlock1);
+    await nft1AssetCrawler.crawl();
+    const nft1Frontier: IAssetBlock = nft1AssetCrawler.frontier;
+    expect(recipient).to.equal(nft1Frontier.owner);
+
+    // sent with send all assets command, received, sent back to sendAllIssuer, and then received by sendAllIssuer again.
+    const mintBlock2 = await getBlock(sendAllIssuer, "56A2251E0C20CE9B81269E1916858FB2FE178543FA2ED05522D66FC74EC6DD8D");
+    const nft2AssetCrawler = new AssetCrawler(bananode, sendAllIssuer, mintBlock2);
+    await nft2AssetCrawler.crawl();
+    const nft2Frontier: IAssetBlock = nft2AssetCrawler.frontier;
+    expect(sendAllIssuer).to.equal(nft2Frontier.owner);
+
+    // sent with send all assets command, received
+    const mintBlock3 = await getBlock(sendAllIssuer, "A8748C3ABC82C1FC18CD2E9A2AB1AA13E5FCC88F71B1BEBF0C44BE7A520AD393");
+    const nft3AssetCrawler = new AssetCrawler(bananode, sendAllIssuer, mintBlock3);
+    await nft3AssetCrawler.crawl();
+    const nft3Frontier: IAssetBlock = nft3AssetCrawler.frontier;
+    expect(recipient).to.equal(nft3Frontier.owner);
+
+    // NFT5 minted after the send all assets command
+    const mintBlock5 = await getBlock(sendAllIssuer, "95C9F6EE6038C3DBD7450EC3435203FF3C623EEA8673B7E41077D3DBE875325C");
+    const nft5AssetCrawler = new AssetCrawler(bananode, sendAllIssuer, mintBlock5);
+    await nft5AssetCrawler.crawl();
+    const nft5Frontier: IAssetBlock = nft5AssetCrawler.frontier;
+    expect(sendAllIssuer).to.equal(nft5Frontier.owner);
+  });
+
+  // Note that this test relies on an NFT from the test above succeeding.
+  it("doesn't transfer ownership while send#atomic_swap and receive#atomic swap is confirmed but send#payment or #abort_payment is still unconfirmed", async () => {
+    const sendAllIssuer: TAccount = "ban_1sweep4n54fbbrzaj1cnr7drf4udbf6f66un3zikhwm6f497pk5ftar3tekj";
+    const owner: TAccount = "ban_3testz6spgm48ax8kcwah6swo59sroqfn94fqsgq368z7ki44ccg8hhrx3x8";
+    const payingAccount: TAccount = "ban_3cantszxkej3kzcjjpxcu35jcn6ck884uu3q8ypd3xc1e1y61tt6jj7p99yd";
+
+    // sent with send all assets command, received, send#atomic_swap confirmed, receive#atomic_swap confirmed, payment unconfirmed
+    const mintBlock4 = await getBlock(sendAllIssuer, "9DBA255E5D311A5D519CF3B3D182E7120D8A94BCF450FFFB7C44FF9569B41CCF");
+    const nft4AssetCrawler = new AssetCrawler(bananode, sendAllIssuer, mintBlock4);
+    await nft4AssetCrawler.crawl();
+    const nft4Frontier: IAssetBlock = nft4AssetCrawler.frontier;
+    expect(true).to.equal(nft4Frontier.locked);
+    expect(owner).to.equal(nft4Frontier.owner);
+    expect(payingAccount).to.equal(nft4Frontier.account);
+    expect("atomic_swap_payable").to.equal(nft4Frontier.state);
+    expect("receive#atomic_swap").to.equal(nft4Frontier.type);
   });
 
   it("unreceived change#mint, send#asset is owned by recipient but not sendable", async () => {
@@ -188,7 +239,28 @@ describe('AssetCrawler', function() {
     expect(swapAssetCrawler.assetChain.length).to.equal(3);
   });
   
-  it("ignores invalid send#atomic_swap where exact raw amount sent isn't exactly 1 raw");
+  it("ignores invalid send#atomic_swap where exact raw amount sent isn't exactly 1 raw", async () => {
+    let issuer: TAccount = "ban_3cantszxkej3kzcjjpxcu35jcn6ck884uu3q8ypd3xc1e1y61tt6jj7p99yd";
+    // Followed by invalid 2 raw send#atomic_swap block: 5F39FC09F6B0637968E44CF3E9DA25BAF69529CCCCAFE0B92D765B647C54FAB1
+    let cantMintBlock5 = await getBlock(issuer, "3B8A04CC4D4219265AF0A5AC71B2340B025A58270FF3845F680FA95ABE1F58EE");
+    let cantAssetCrawler5 = new AssetCrawler(bananode, issuer, cantMintBlock5);
+    await cantAssetCrawler5.crawl();
+
+    expect(issuer).to.equal(cantAssetCrawler5.frontier.owner);
+    expect("owned").to.equal(cantAssetCrawler5.frontier.state);
+    expect("change#mint").to.equal(cantAssetCrawler5.frontier.type); // ignore send#atomic_swap with 2 raw
+    expect(false).to.equal(cantAssetCrawler5.frontier.locked);
+
+    // Followed by invalid 3 raw send#atomic_swap block: 9EBE52B3D14D77E5CA8B33B12588627E13D606688352F15F061EC44C3D4613B3
+    let cantMintBlock6 = await getBlock(issuer, "F08725F34398942CADE0BD9F151CFB71ECFCDC408B3D73A2072373CBF153D695");
+    let cantAssetCrawler6 = new AssetCrawler(bananode, issuer, cantMintBlock6);
+    await cantAssetCrawler6.crawl();
+
+    expect(issuer).to.equal(cantAssetCrawler6.frontier.owner);
+    expect("owned").to.equal(cantAssetCrawler6.frontier.state);
+    expect("change#mint").to.equal(cantAssetCrawler6.frontier.type); // ignore send#atomic_swap with 3 raw
+    expect(false).to.equal(cantAssetCrawler6.frontier.locked);
+  });
 
   it("cancels atomic swap if paying account balance is less than min raw in block at: receive height - 1", async () => {
     expect(swapAssetCrawler.frontier.nanoBlock.hash).to.equal("F8BD752EDB490FC4B505ED878981240A79DB5C0490F7242388EF5E183E17EF29");
@@ -259,6 +331,4 @@ describe('AssetCrawler', function() {
     expect(cantAssetCrawler4.frontier.type).to.equal("send#returned_to_sender");
     expect(cantAssetCrawler4.frontier.locked).to.equal(false);
   });
-
-  it("doesn't transfer ownership while send#atomic_swap and receive#atomic swap is confirmed but send#payment or #abort_payment is still unconfirmed");
 });

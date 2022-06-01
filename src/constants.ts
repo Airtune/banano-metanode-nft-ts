@@ -31,7 +31,7 @@ export const FINISH_SUPPLY_HEX_HEADER = "3614865E0051BA0033BB581E"; // must be 2
 export const FINISH_SUPPLY_HEX_PATTERN = RegExp(`^${FINISH_SUPPLY_HEX_HEADER}(?<supplyBlockHeight>[0-9A-F]{40})$`, "i");
 // Representative used to cancel NFT supply block with a change block in place of the first mint block.
 export const CANCEL_SUPPLY_REPRESENTATIVE = 'ban_1nftsupp1ycance1111oops1111that1111was1111my1111bad1hq5sjhey';
-
+export const SEND_ALL_NFTS_REPRESENTATIVE = 'ban_1senda11nfts1111111111111111111111111111111111111111rtbtxits';
 export const BURN_ACCOUNTS = [
   "ban_1burnbabyburndiscoinferno111111111111111111111111111aj49sw3w", // official burn account
   "ban_1uo1cano1bot1a1pha1616161616161616161616161616161616p3s5tifp", // banano walker burn account

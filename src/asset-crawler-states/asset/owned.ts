@@ -11,7 +11,7 @@ import { TAssetState } from "../../types/asset-state";
 import { TAssetBlockType } from "../../types/asset-block-type";
 
 // constants
-import { BURN_ACCOUNTS } from "../../constants";
+import { BURN_ACCOUNTS, SEND_ALL_NFTS_REPRESENTATIVE } from "../../constants";
 
 // src
 import { AssetCrawler } from "../../asset-crawler";
@@ -41,7 +41,7 @@ function toAssetBlock(assetCrawler: AssetCrawler, block: INanoBlock): (IAssetBlo
   if (block.type !== 'state') { return undefined; }
 
   if (block.subtype === 'send') {
-    if (block.representative === assetCrawler.assetRepresentative) {
+    if (block.representative === assetCrawler.assetRepresentative || block.representative === SEND_ALL_NFTS_REPRESENTATIVE) {
       const recipient = block.account;
       let state: TAssetState;
       let type: TAssetBlockType;
@@ -68,8 +68,9 @@ function toAssetBlock(assetCrawler: AssetCrawler, block: INanoBlock): (IAssetBlo
     const ownershipBlockHeight = BigInt(assetCrawler.frontier.nanoBlock.height);
     const attemptTradeWithSelf = block.account == assetCrawler.frontier.owner;
     const validReceiveHeight   = atomicSwapConditions && atomicSwapConditions.receiveHeight >= BigInt(2);
-    const currentAssetHeight   = atomicSwapConditions && atomicSwapConditions.assetHeight === ownershipBlockHeight
-    if (!attemptTradeWithSelf && validReceiveHeight && currentAssetHeight) {
+    const currentAssetHeight   = atomicSwapConditions && atomicSwapConditions.assetHeight === ownershipBlockHeight;
+    const sends1raw            = atomicSwapConditions && BigInt(block.amount) == BigInt('1');
+    if (!attemptTradeWithSelf && validReceiveHeight && currentAssetHeight && sends1raw) {
       return {
         state: 'atomic_swap_receivable',
         type: 'send#atomic_swap',
