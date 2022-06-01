@@ -87,12 +87,12 @@ describe('AssetCrawler', function() {
   });
 
   // Note that this test relies on an NFT from the test above succeeding.
-  it("doesn't transfer ownership while send#atomic_swap and receive#atomic swap is confirmed but send#payment or #abort_payment is still unconfirmed", async () => {
+  it("doesn't transfer ownership while send#atomic_swap and receive#atomic swap is confirmed but send#payment or #abort_payment isn't submitted on-chain", async () => {
     const sendAllIssuer: TAccount = "ban_1sweep4n54fbbrzaj1cnr7drf4udbf6f66un3zikhwm6f497pk5ftar3tekj";
     const owner: TAccount = "ban_3testz6spgm48ax8kcwah6swo59sroqfn94fqsgq368z7ki44ccg8hhrx3x8";
     const payingAccount: TAccount = "ban_3cantszxkej3kzcjjpxcu35jcn6ck884uu3q8ypd3xc1e1y61tt6jj7p99yd";
 
-    // sent with send all assets command, received, send#atomic_swap confirmed, receive#atomic_swap confirmed, payment unconfirmed
+    // sent with send all assets command, received, send#atomic_swap confirmed, receive#atomic_swap confirmed, payment or abort block isn't submitted on-chain
     const mintBlock4 = await getBlock(sendAllIssuer, "9DBA255E5D311A5D519CF3B3D182E7120D8A94BCF450FFFB7C44FF9569B41CCF");
     const nft4AssetCrawler = new AssetCrawler(bananode, sendAllIssuer, mintBlock4);
     await nft4AssetCrawler.crawl();
