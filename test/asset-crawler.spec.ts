@@ -215,7 +215,7 @@ describe('AssetCrawler', function () {
         // send#asset after previously confirmed send#asset
         "62DCF26825FA44C394D1C468BCB6B69E779C9E17899DB04B4489C33FB58057EF"
       ]
-      expect(assetBlock.nanoBlock.hash).to.not.include(invalidSendHashes);
+      expect(invalidSendHashes).to.not.include(assetBlock.nanoBlock.hash);
     }
 
     // previously confirmed send#asset 
