@@ -22,24 +22,28 @@ describe('AssetCrawler', function () {
   before(async () => {
     swapMintBlock = await getBlock(swapIssuer, "439F5CB566E957576C2473B7AF6F3D7D17FBF5022685EB70ED825EAC3B84A56A");
     swapAssetCrawler = new AssetCrawler(bananode, swapIssuer, swapMintBlock);
-    await swapAssetCrawler.crawl();
+    try {
+      await swapAssetCrawler.crawl();
+    } catch(error) {
+      throw(error);
+    }
   });
 
-  it("confirms change#mint, send#asset, receive#asset", async () => {
+  it("confirms change#mint > send#asset > receive#asset", async () => {
     const recipient: TAccount = "ban_1twos81eoq9s6d1asht5wwz53m9kw7hkuajad1m4u5otgcsb4qstymquhahf";
     const mintBlockHash = "F61CCF94D6E5CFE9601C436ACC3976AF876D1DA21909FEB88B629BEDEC4DF1EA";
     const mintBlock = await getBlock(issuer, mintBlockHash);
     const assetCrawler = new AssetCrawler(bananode, issuer, mintBlock);
     await assetCrawler.crawl();
     const assetFrontier: IAssetBlock = assetCrawler.frontier;
-    expect(recipient).to.equal(assetFrontier.account);
-    expect(recipient).to.equal(assetFrontier.owner);
+    expect(assetFrontier.account).to.equal(recipient);
+    expect(assetFrontier.owner).to.equal(recipient);
     expect("owned").to.equal(assetFrontier.state);
     expect("receive#asset").to.equal(assetFrontier.type);
     expect(false).to.equal(assetFrontier.locked);
   });
 
-  it("confirms send#mint, receive#asset", async () => {
+  it("confirms send#mint > receive#asset", async () => {
     const recipient: TAccount = "ban_1twos81eoq9s6d1asht5wwz53m9kw7hkuajad1m4u5otgcsb4qstymquhahf";
     const mintBlockHash = "EFE6CCFDE4FD56E60F302F22DCF41E736F611124E3F463135FDC31769A68B970";
     const mintBlock = await getBlock(issuer, mintBlockHash);
@@ -111,7 +115,7 @@ describe('AssetCrawler', function () {
     const assetCrawler = new AssetCrawler(bananode, issuer, mintBlock);
     await assetCrawler.crawl();
     const assetFrontier: IAssetBlock = assetCrawler.frontier;
-    expect(issuer).to.equal(assetFrontier.account);
+    expect(recipient).to.equal(assetFrontier.account);
     expect(recipient).to.equal(assetFrontier.owner);
     expect("receivable").to.equal(assetFrontier.state);
     expect("send#asset").to.equal(assetFrontier.type);
@@ -125,11 +129,11 @@ describe('AssetCrawler', function () {
     const assetCrawler = new AssetCrawler(bananode, issuer, mintBlock);
     await assetCrawler.crawl();
     const assetFrontier: IAssetBlock = assetCrawler.frontier;
-    expect(issuer).to.equal(assetFrontier.account);
-    expect(recipient).to.equal(assetFrontier.owner);
-    expect("receivable").to.equal(assetFrontier.state);
-    expect("send#mint").to.equal(assetFrontier.type);
-    expect(false).to.equal(assetFrontier.locked);
+    expect(assetCrawler.issuer).to.equal(issuer);
+    expect(assetFrontier.owner).to.equal(recipient);
+    expect(assetFrontier.state).to.equal("receivable");
+    expect(assetFrontier.type).to.equal("send#mint");
+    expect(assetFrontier.locked).to.equal(false);
   });
 
   it("is unable to send assets owned by someone else", async () => {
@@ -174,7 +178,7 @@ describe('AssetCrawler', function () {
     expect(4).to.equal(assetCrawler.assetChain.length);
     expect("send#mint").to.equal(assetCrawler.assetChain[0].type);
     expect("receivable").to.equal(assetCrawler.assetChain[0].state);
-    expect(issuer).to.equal(assetCrawler.assetChain[0].account);
+    expect(issuer).to.equal(assetCrawler.issuer);
     expect("ban_1twos81eoq9s6d1asht5wwz53m9kw7hkuajad1m4u5otgcsb4qstymquhahf").to.equal(assetCrawler.assetChain[0].owner);
 
     expect("receive#asset").to.equal(assetCrawler.assetChain[1].type);
@@ -184,7 +188,7 @@ describe('AssetCrawler', function () {
 
     expect("send#asset").to.equal(assetCrawler.assetChain[2].type);
     expect("receivable").to.equal(assetCrawler.assetChain[2].state);
-    expect("ban_1twos81eoq9s6d1asht5wwz53m9kw7hkuajad1m4u5otgcsb4qstymquhahf").to.equal(assetCrawler.assetChain[2].account);
+    expect("ban_1oozinhbrw7nrjfmtq1roybi8t7q7jywwne4pjto7oy78injdmn4n3a5w5br").to.equal(assetCrawler.assetChain[2].account);
     expect("ban_1oozinhbrw7nrjfmtq1roybi8t7q7jywwne4pjto7oy78injdmn4n3a5w5br").to.equal(assetCrawler.assetChain[2].owner);
 
     expect("receive#asset").to.equal(assetCrawler.assetChain[3].type);

@@ -22,9 +22,9 @@ function validPayment(previousBlock: INanoBlock, nextBlock: INanoBlock, sendAtom
 
 // State for when receive#atomic_swap is confirmed but send#payment hasn't been sent yet.
 export async function pendingPaymentCrawl(assetCrawler: AssetCrawler): Promise<boolean> {
-  const paymentAccount = assetCrawler.frontier.account;
+  const payingAccount = assetCrawler.frontier.account;
   const paymentHeight = BigInt(assetCrawler.frontier.nanoBlock.height) + BigInt(1);
-  const [previousBlock, nextBlock]: [INanoBlock, INanoBlock] = await findBlockAtHeightAndPreviousBlock(paymentAccount, paymentHeight);
+  const [previousBlock, nextBlock]: [INanoBlock, INanoBlock] = await findBlockAtHeightAndPreviousBlock(payingAccount, paymentHeight);
   const sendAtomicSwap: IAssetBlock = assetCrawler.findSendAtomicSwapBlock();
   // guards
   if (nextBlock === undefined || sendAtomicSwap === undefined) {
@@ -38,12 +38,14 @@ export async function pendingPaymentCrawl(assetCrawler: AssetCrawler): Promise<b
 
   const atomicSwapConditions: IAtomicSwapConditions = assetCrawler.currentAtomicSwapConditions();
 
+  const originalOwner = sendAtomicSwap.owner;
+  
   if (validPayment(previousBlock, nextBlock, sendAtomicSwap, atomicSwapConditions)) {
     assetCrawler.assetChain.push({
       state: 'owned',
       type: 'send#payment',
-      account: assetCrawler.frontier.account,
-      owner: assetCrawler.frontier.account,
+      account: payingAccount,
+      owner: payingAccount,
       locked: false,
       nanoBlock: nextBlock,
       traceLength: assetCrawler.traceLength
@@ -65,17 +67,17 @@ export async function pendingPaymentCrawl(assetCrawler: AssetCrawler): Promise<b
     assetCrawler.assetChain.push({
       state: "(return_to_nft_seller)",
       type: type,
-      account: assetCrawler.frontier.account,
-      owner: sendAtomicSwap.account,
+      account: originalOwner,
+      owner: originalOwner,
       locked: false,
       nanoBlock: nextBlock,
       traceLength: assetCrawler.traceLength
     });
     assetCrawler.assetChain.push({
       state: "owned",
-      type: "send#returned_to_sender", // essentially ignored because state is owned
-      account: sendAtomicSwap.account,
-      owner: sendAtomicSwap.account,
+      type: "send#returned_to_sender", // essentially ignored because state on the line above is owned
+      account: originalOwner,
+      owner: originalOwner,
       locked: false,
       nanoBlock: sendAtomicSwap.nanoBlock,
       traceLength: assetCrawler.traceLength

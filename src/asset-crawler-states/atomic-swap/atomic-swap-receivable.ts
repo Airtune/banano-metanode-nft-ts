@@ -16,12 +16,12 @@ export async function atomicSwapReceivableCrawl(assetCrawler: AssetCrawler): Pro
   }
 
   // guard check if paying account doesn't have enough raw.
-  const sender = sendAtomicSwap.account;
-  const recipient = sendAtomicSwap.nanoBlock.account;
+  const payerAccount = sendAtomicSwap.account;
+  const originalOwner = sendAtomicSwap.owner;
 
   // NB: Trace length from findBlockAtHeight might be significantly larger than 1.
   assetCrawler.traceLength += BigInt(1);
-  const blocks = await findBlockAtHeightAndPreviousBlock(recipient, atomicSwapConditions.receiveHeight);
+  const blocks = await findBlockAtHeightAndPreviousBlock(payerAccount, atomicSwapConditions.receiveHeight);
   const [previousBlock, receiveBlock] = blocks;
 
   if (previousBlock === undefined) { return false; }
@@ -29,8 +29,8 @@ export async function atomicSwapReceivableCrawl(assetCrawler: AssetCrawler): Pro
     assetCrawler.assetChain.push({
       state: "owned",
       type: "send#returned_to_sender",
-      account: sendAtomicSwap.account,
-      owner: sendAtomicSwap.account,
+      account: originalOwner,
+      owner: originalOwner,
       locked: false,
       nanoBlock: sendAtomicSwap.nanoBlock,
       traceLength: assetCrawler.traceLength
@@ -51,8 +51,8 @@ export async function atomicSwapReceivableCrawl(assetCrawler: AssetCrawler): Pro
     assetCrawler.assetChain.push({
       state: "atomic_swap_payable",
       type: "receive#atomic_swap",
-      account: recipient,
-      owner: sender,
+      account: payerAccount,
+      owner: originalOwner,
       locked: true,
       nanoBlock: receiveBlock,
       traceLength: assetCrawler.traceLength
@@ -62,8 +62,8 @@ export async function atomicSwapReceivableCrawl(assetCrawler: AssetCrawler): Pro
     assetCrawler.assetChain.push({
       state: "(return_to_nft_seller)",
       type: "receive#abort_receive_atomic_swap",
-      account: recipient,
-      owner: sender,
+      account: originalOwner,
+      owner: originalOwner,
       locked: false,
       nanoBlock: receiveBlock,
       traceLength: assetCrawler.traceLength
@@ -71,8 +71,8 @@ export async function atomicSwapReceivableCrawl(assetCrawler: AssetCrawler): Pro
     assetCrawler.assetChain.push({
       state: 'owned',
       type: 'send#returned_to_sender',
-      account: sendAtomicSwap.account,
-      owner: sendAtomicSwap.account,
+      account: originalOwner,
+      owner: originalOwner,
       locked: false,
       nanoBlock: sendAtomicSwap.nanoBlock,
       traceLength: assetCrawler.traceLength

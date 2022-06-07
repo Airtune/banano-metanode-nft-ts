@@ -21,17 +21,22 @@ import { TAccount } from "../../types/banano";
 // State for when the the block's account own the asset.
 export async function ownedCrawl(assetCrawler: AssetCrawler): Promise<boolean> {
   // trace forward in account history from frontier block
-  let frontierCrawler = new NanoAccountForwardCrawler(assetCrawler.nanoNode, assetCrawler.frontier.account, assetCrawler.frontier.nanoBlock.hash, "1");
-  await frontierCrawler.initialize();
+  let frontierCrawler = new NanoAccountForwardCrawler(assetCrawler.nanoNode, assetCrawler.frontier.owner, assetCrawler.frontier.nanoBlock.hash, "1");
 
-  for await (const nanoBlock of frontierCrawler) {
-    assetCrawler.traceLength += BigInt(1);
+  try {
+    await frontierCrawler.initialize();
 
-    const assetBlock: IAssetBlock = toAssetBlock(assetCrawler, nanoBlock);
-    if (assetBlock === undefined) { continue; }
+    for await (const nanoBlock of frontierCrawler) {
+      assetCrawler.traceLength += BigInt(1);
 
-    assetCrawler.assetChain.push(assetBlock);
-    return true;
+      const assetBlock: IAssetBlock = toAssetBlock(assetCrawler, nanoBlock);
+      if (assetBlock === undefined) { continue; }
+
+      assetCrawler.assetChain.push(assetBlock);
+      return true;
+    }
+  } catch(error) {
+    throw(error);
   }
 
   return false;
@@ -52,30 +57,34 @@ function toAssetBlock(assetCrawler: AssetCrawler, block: INanoBlock): (IAssetBlo
         state = "receivable";
         type = "send#asset";
       }
+
       return {
         state: state,
         type: type,
-        account: assetCrawler.frontier.account,
-        owner: block.account,
+        account: recipient,
+        owner: recipient,
         locked: false,
         nanoBlock: block,
         traceLength: assetCrawler.traceLength
       };
     }
 
+    const ownerAccount   = assetCrawler.frontier.owner;
+    const payingAccount  = block.account;
     const representative = block.representative as TAccount;
     const atomicSwapConditions: IAtomicSwapConditions = parseAtomicSwapRepresentative(representative);
     const ownershipBlockHeight = BigInt(assetCrawler.frontier.nanoBlock.height);
-    const attemptTradeWithSelf = block.account == assetCrawler.frontier.owner;
+    const attemptTradeWithSelf = payingAccount == ownerAccount;
     const validReceiveHeight   = atomicSwapConditions && atomicSwapConditions.receiveHeight >= BigInt(2);
     const currentAssetHeight   = atomicSwapConditions && atomicSwapConditions.assetHeight === ownershipBlockHeight;
     const sends1raw            = atomicSwapConditions && BigInt(block.amount) == BigInt('1');
     if (!attemptTradeWithSelf && validReceiveHeight && currentAssetHeight && sends1raw) {
+      const payingAccount = block.account;
       return {
         state: 'atomic_swap_receivable',
         type: 'send#atomic_swap',
-        account: assetCrawler.frontier.account,
-        owner: assetCrawler.frontier.owner,
+        account: payingAccount,
+        owner: ownerAccount,
         locked: true,
         nanoBlock: block,
         traceLength: assetCrawler.traceLength

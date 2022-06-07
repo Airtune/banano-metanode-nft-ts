@@ -3,7 +3,15 @@ import { AssetCrawler } from "../../asset-crawler";
 
 export async function receivableCrawl(assetCrawler: AssetCrawler): Promise<boolean> {
   const sendBlockHash = assetCrawler.frontier.nanoBlock.hash;
-  const sender = assetCrawler.frontier.account;
+
+  let sender;
+
+  if (assetCrawler.frontier.type === "send#mint") {
+    sender = assetCrawler.issuer;
+  } else {
+    sender = assetCrawler.previousFrontier.owner;
+  }
+
   const recipient = assetCrawler.frontier.owner;
   const receiveBlock = await findReceiveBlock(sender, sendBlockHash, recipient);
   // guards

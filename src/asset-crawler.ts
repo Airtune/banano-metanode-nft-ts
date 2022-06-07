@@ -8,7 +8,6 @@ import { TAccount } from "./types/banano";
 
 // packages
 import { NanoNode } from 'nano-account-crawler/dist/nano-node';
-import { NanoAccountForwardCrawler } from "nano-account-crawler/dist/nano-account-forward-crawler";
 
 // lib
 import { bananoIpfs } from "./lib/banano-ipfs";
@@ -23,10 +22,6 @@ import { ownedCrawl } from "./asset-crawler-states/asset/owned";
 import { receivableCrawl } from "./asset-crawler-states/asset/receivable";
 import { atomicSwapReceivableCrawl } from "./asset-crawler-states/atomic-swap/atomic-swap-receivable";
 import { pendingPaymentCrawl } from "./asset-crawler-states/atomic-swap/atomic-swap-payable";
-import { pendingDelegationCrawl } from "./asset-crawler-states/delegation/delegation-receivable";
-import { delegatedCrawl } from "./asset-crawler-states/delegation/delegated";
-import { delegatedAtomicSwapReceivableCrawl } from "./asset-crawler-states/delegation/delegated-atomic-swap-receivable";
-import { delegatedAtomicSwapPayableCrawl } from "./asset-crawler-states/delegation/delegated-atomic-swap-payable";
 import { returnToNFTSellerCrawl } from "./asset-crawler-states/return-to-nft-seller";
 
 const assetCrawlerStates = {
@@ -34,10 +29,6 @@ const assetCrawlerStates = {
   "receivable": receivableCrawl,
   "atomic_swap_receivable": atomicSwapReceivableCrawl,
   "atomic_swap_payable": pendingPaymentCrawl,
-  "delegation_receivable": pendingDelegationCrawl,
-  "delegated": delegatedCrawl,
-  "delegated_atomic_swap_receivable": delegatedAtomicSwapReceivableCrawl,
-  "delegated_atomic_swap_payable": delegatedAtomicSwapPayableCrawl,
   "(return_to_nft_seller)": returnToNFTSellerCrawl
 };
 
@@ -70,9 +61,19 @@ export class AssetCrawler {
     this._metadataRepresentative = this._mintBlock.representative;
     this._traceLength = BigInt(1);
 
-    await assetMintCrawl(this, this._mintBlock);
+    try {
+      await assetMintCrawl(this, this._mintBlock);
+    } catch(error) {
+      throw(error);
+    }
 
-    while (await this.crawlStep()) {
+    let newStep = true;
+    while (newStep) {
+      try {
+        newStep = await this.crawlStep();
+      } catch(error) {
+        throw(error);
+      }
       if (this._traceLength >= MAX_TRACE_LENGTH) {
         break;
       }
@@ -83,7 +84,11 @@ export class AssetCrawler {
     const stateCrawlFn = assetCrawlerStates[this.frontier.state];
 
     if (typeof stateCrawlFn == "function") {
-      return stateCrawlFn(this);
+      try {
+        return await stateCrawlFn(this);
+      } catch(error) {
+        throw(error);
+      }
     } else {
       throw Error(`UnhandledAssetState: "${this.frontier.state}" was not handled for block: ${this.frontier.nanoBlock.hash}`);
     }
@@ -119,6 +124,10 @@ export class AssetCrawler {
 
   public get frontier(): IAssetBlock {
     return this._assetChain[this._assetChain.length - 1];
+  }
+
+  public get previousFrontier(): IAssetBlock {
+    return this._assetChain[this._assetChain.length - 2];
   }
 
   public get assetRepresentative() {
