@@ -41,6 +41,7 @@ describe('AssetCrawler', function () {
     expect("owned").to.equal(assetFrontier.state);
     expect("receive#asset").to.equal(assetFrontier.type);
     expect(false).to.equal(assetFrontier.locked);
+    expect(assetFrontier.nanoBlock.hash).to.equal('201D206790E46B4CB24CA9F0DB370F8F4BA2E905D66E8DE825D36A9D0E775DAB');
   });
 
   it("confirms send#mint > receive#asset", async () => {
