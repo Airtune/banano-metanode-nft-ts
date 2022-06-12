@@ -10,20 +10,24 @@ export class MutexManager {
   }
 
   async runExclusive(id, func) {
-    // create mutex
-    await this.mainMutex.runExclusive(() => {
-      if (!(this.mutexByID[id] instanceof Mutex)) {
-        this.mutexByID[id] = new Mutex();
-      }
-    });
+    try {
+      // create mutex
+      await this.mainMutex.runExclusive(() => {
+        if (!(this.mutexByID[id] instanceof Mutex)) {
+          this.mutexByID[id] = new Mutex();
+        }
+      });
 
-    await this.mutexByID[id].runExclusive(func);
+      await this.mutexByID[id].runExclusive(func);
 
-    // cleanup mutex
-    await this.mainMutex.runExclusive(() => {
-      if (!this.mutexByID[id].isLocked()) {
-        delete this.mutexByID[id];
-      }
-    })
+      // cleanup mutex
+      await this.mainMutex.runExclusive(() => {
+        if (!this.mutexByID[id].isLocked()) {
+          delete this.mutexByID[id];
+        }
+      });
+    } catch(error) {
+      throw(error);
+    }
   }
 }

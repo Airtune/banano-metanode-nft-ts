@@ -23,18 +23,22 @@ export class AccountCache {
   }
 
   async updateInfoFromBananode() {
-    const accountInfo = await getAccountInfo(this._account);
-    const frontierBlock = await getBlock(this._account, accountInfo.frontier);
-    this._frontier = accountInfo.frontier;
-    this._balance = BigInt(accountInfo.balance);
-    
-    this._representative = frontierBlock.representative as TAccount;
+    try {
+      const accountInfo = await getAccountInfo(this._account);
+      const frontierBlock = await getBlock(this._account, accountInfo.frontier);
+      this._frontier = accountInfo.frontier;
+      this._balance = BigInt(accountInfo.balance);
+      
+      this._representative = frontierBlock.representative as TAccount;
 
-    const supplyInfo = parseSupplyRepresentative(this._representative);
-    if (supplyInfo) {
-      this._accountState = "supply_awaiting_mint";
-    } else {
-      this._accountState = "ready";
+      const supplyInfo = parseSupplyRepresentative(this._representative);
+      if (supplyInfo) {
+        this._accountState = "supply_awaiting_mint";
+      } else {
+        this._accountState = "ready";
+      }
+    } catch(error) {
+      throw(error);
     }
   }
 
@@ -47,20 +51,32 @@ export class AccountCache {
 
   // Lazy updateInfoFromBananode
   public async getBalance() {
-    if (!this._balance) { await this.updateInfoFromBananode(); }
-    return this._balance;
+    try {
+      if (!this._balance) { await this.updateInfoFromBananode(); }
+      return this._balance;
+    } catch(error) {
+      throw(error);
+    }
   }
 
   // Lazy updateInfoFromBananode
   public async getFrontier() {
-    if (!this._balance) { await this.updateInfoFromBananode(); }
-    return this._frontier;
+    try {
+      if (!this._balance) { await this.updateInfoFromBananode(); }
+      return this._frontier;
+    } catch(error) {
+      throw(error);
+    }
   }
 
   // Lazy updateInfoFromBananode
   public async getRepresentative() {
-    if (!this._representative) { await this.updateInfoFromBananode(); }
-    return this._representative;
+    try {
+      if (!this._representative) { await this.updateInfoFromBananode(); }
+      return this._representative;
+    } catch(error) {
+      throw(error);
+    }
   }
 
   // Cached value (can be uninitialized)
