@@ -9,6 +9,7 @@ chai.use(chaiAsPromised);
 const expect = chai.expect;
 
 describe('MintBlocksCrawler', function() {
+  this.timeout(10000);
   let mintBlocksCrawler3mint9: MintBlocksCrawler;
   let mintBlocks3mint9: INanoBlock[];
   let mintBlockHashes3mint9: TBlockHash[];

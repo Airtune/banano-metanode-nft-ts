@@ -11,7 +11,7 @@ chai.use(chaiAsPromised);
 const expect = chai.expect;
 
 describe('AssetCrawler', function () {
-  this.timeout(10000);
+  this.timeout(20000);
   const issuer: TAccount = "ban_1ty5s13h9tg9f57gwsto8njkzejfu9tjasc8a9mn1wujfxib8dj7w54jg3qm";
   const swapIssuer: TAccount = "ban_1swapxh34bjstbc8c5tonbncw5nrc6sgk7h71bxtetty3huiqcj6mja9rxjt";
   let swapMintBlock;
@@ -67,21 +67,24 @@ describe('AssetCrawler', function () {
     const nft1AssetCrawler = new AssetCrawler(bananode, sendAllIssuer, mintBlock1);
     await nft1AssetCrawler.crawl();
     const nft1Frontier: IAssetBlock = nft1AssetCrawler.frontier;
-    expect(recipient).to.equal(nft1Frontier.owner);
+    expect(nft1Frontier.owner).to.equal(recipient);
+    expect(nft1Frontier.nanoBlock.hash).to.equal("024ACA494596E054C94E86A11C881018F6A0D73B108D1A0D15A66F91ADCEC1D8"); // !!! Manually validate
 
     // sent with send all assets command, received, sent back to sendAllIssuer, and then received by sendAllIssuer again.
     const mintBlock2 = await getBlock(sendAllIssuer, "56A2251E0C20CE9B81269E1916858FB2FE178543FA2ED05522D66FC74EC6DD8D");
     const nft2AssetCrawler = new AssetCrawler(bananode, sendAllIssuer, mintBlock2);
     await nft2AssetCrawler.crawl();
     const nft2Frontier: IAssetBlock = nft2AssetCrawler.frontier;
-    expect(sendAllIssuer).to.equal(nft2Frontier.owner);
+    expect(nft2Frontier.owner).to.equal(sendAllIssuer);
+    expect(nft2Frontier.nanoBlock.hash).to.equal("D29F111B51E113F58A1805379CB880564402B6DC430B59DE4598E5A5ED36AF3A"); // !!! Manually validate
 
     // sent with send all assets command, received
     const mintBlock3 = await getBlock(sendAllIssuer, "A8748C3ABC82C1FC18CD2E9A2AB1AA13E5FCC88F71B1BEBF0C44BE7A520AD393");
     const nft3AssetCrawler = new AssetCrawler(bananode, sendAllIssuer, mintBlock3);
     await nft3AssetCrawler.crawl();
     const nft3Frontier: IAssetBlock = nft3AssetCrawler.frontier;
-    expect(recipient).to.equal(nft3Frontier.owner);
+    expect(nft3Frontier.owner).to.equal(recipient);
+    expect(nft3Frontier.nanoBlock.hash).to.equal("024ACA494596E054C94E86A11C881018F6A0D73B108D1A0D15A66F91ADCEC1D8"); // !!! Manually validate
 
     // NFT5 minted after the send all assets command
     const mintBlock5 = await getBlock(sendAllIssuer, "95C9F6EE6038C3DBD7450EC3435203FF3C623EEA8673B7E41077D3DBE875325C");
@@ -89,6 +92,7 @@ describe('AssetCrawler', function () {
     await nft5AssetCrawler.crawl();
     const nft5Frontier: IAssetBlock = nft5AssetCrawler.frontier;
     expect(sendAllIssuer).to.equal(nft5Frontier.owner);
+    expect(nft5Frontier.nanoBlock.hash).to.equal("95C9F6EE6038C3DBD7450EC3435203FF3C623EEA8673B7E41077D3DBE875325C"); // !!! Manually validate // !!! Manually validate
   });
 
   // Note that this test relies on an NFT from the test above succeeding.
@@ -135,6 +139,7 @@ describe('AssetCrawler', function () {
     expect(assetFrontier.state).to.equal("receivable");
     expect(assetFrontier.type).to.equal("send#mint");
     expect(assetFrontier.locked).to.equal(false);
+    expect(assetFrontier.nanoBlock.hash).to.equal('D051A922C775616CADC97EB29FD6D75AA514D05ABA4A1252F8B626C9C4F863E8');
   });
 
   it("is unable to send assets owned by someone else", async () => {
@@ -145,7 +150,8 @@ describe('AssetCrawler', function () {
     const assetCrawler = new AssetCrawler(bananode, issuer, mintBlock);
     await assetCrawler.crawl();
 
-    expect(issuer).to.equal(assetCrawler.frontier.owner);
+    expect(assetCrawler.frontier.owner).to.equal(issuer);
+    expect(assetCrawler.frontier.nanoBlock.hash).to.equal('777B8264AFDF004C77285CBBA7F208D2BB5A64118FBB5DCCA7D2619374CB3C4A');
 
     const assetChain: IAssetBlock[] = assetCrawler.assetChain;
     for (let i = 0; i < assetChain.length; i++) {
@@ -236,8 +242,8 @@ describe('AssetCrawler', function () {
     const assetCrawler = new AssetCrawler(bananode, swapIssuer, mintBlock);
     await assetCrawler.crawl();
 
-    expect("E8285EBCF17C5FD0DFDCE086253A72D4795032FB5E23F8D13880954D8BB8AE56").to.equal(assetCrawler.frontier.nanoBlock.hash);
-    expect("ban_1buyayd6csb1rwprgcks9sif66hthrbu9jah5ehspmsxghi63ter8f66cy1p").to.equal(assetCrawler.frontier.owner);
+    expect(assetCrawler.frontier.nanoBlock.hash).to.equal("E8285EBCF17C5FD0DFDCE086253A72D4795032FB5E23F8D13880954D8BB8AE56");
+    expect(assetCrawler.frontier.owner).to.equal("ban_1buyayd6csb1rwprgcks9sif66hthrbu9jah5ehspmsxghi63ter8f66cy1p");
   });
 
   it("ignores invalid send#atomic_swap where encoded receive height is less than 2", async () => {
@@ -283,10 +289,10 @@ describe('AssetCrawler', function () {
 
     // The receive block that changes representative and is expected to be invalid is:
     // CCBBB68F1C216C45F76C175BB2116F97080512C84D0A4830E0186DADFEF56921
-    expect("2EEFFD2621E2260255F200131B3CAF3D25271076DB5E8AE856DCE8BBB2DC1875").to.equal(failSwapAssetCrawler.frontier.nanoBlock.hash);
-    expect("ban_1swapxh34bjstbc8c5tonbncw5nrc6sgk7h71bxtetty3huiqcj6mja9rxjt").to.equal(failSwapAssetCrawler.frontier.owner);
-    expect("owned").to.equal(failSwapAssetCrawler.frontier.state);
-    expect("send#returned_to_sender").to.equal(failSwapAssetCrawler.frontier.type);
+    expect(failSwapAssetCrawler.frontier.nanoBlock.hash).to.equal("2EEFFD2621E2260255F200131B3CAF3D25271076DB5E8AE856DCE8BBB2DC1875");
+    expect(failSwapAssetCrawler.frontier.owner).to.equal("ban_1swapxh34bjstbc8c5tonbncw5nrc6sgk7h71bxtetty3huiqcj6mja9rxjt");
+    expect(failSwapAssetCrawler.frontier.state).to.equal("owned");
+    expect(failSwapAssetCrawler.frontier.type).to.equal("send#returned_to_sender");
   });
 
   it("cancels atomic swap if a block other than the relevant receive#atomic_swap is confirmed at receive_height", async () => {
@@ -298,7 +304,8 @@ describe('AssetCrawler', function () {
     expect(issuer).to.equal(cantAssetCrawler1.frontier.owner);
     expect("owned").to.equal(cantAssetCrawler1.frontier.state);
     expect("send#returned_to_sender").to.equal(cantAssetCrawler1.frontier.type);
-    expect(false).to.equal(cantAssetCrawler1.frontier.locked);
+    expect(cantAssetCrawler1.frontier.locked).to.equal(false);
+    expect(cantAssetCrawler1.frontier.nanoBlock.hash).to.equal("B6B01C3701CFE5C091FB6DC068075D7A567926C74C44B1BC6F0FAE3BD18A0F6B");
   });
 
   it("cancels atomic swap if a block other than send#payment follows receive#atomic_swap", async () => {
@@ -310,7 +317,8 @@ describe('AssetCrawler', function () {
     expect(issuer).to.equal(cantAssetCrawler2.frontier.owner);
     expect("owned").to.equal(cantAssetCrawler2.frontier.state);
     expect("send#returned_to_sender").to.equal(cantAssetCrawler2.frontier.type);
-    expect(false).to.equal(cantAssetCrawler2.frontier.locked);
+    expect(cantAssetCrawler2.frontier.locked).to.equal(false);
+    expect(cantAssetCrawler2.frontier.nanoBlock.hash).to.equal("292A27AC9930DFAA00356AF1B78960A2FF785ABDD8999C2FB3D0F20C99A822A0");
   });
 
   it("cancels atomic swap if send#payment sends too little raw to the right account", async () => {
@@ -322,7 +330,8 @@ describe('AssetCrawler', function () {
     expect(issuer).to.equal(cantAssetCrawler3.frontier.owner);
     expect("owned").to.equal(cantAssetCrawler3.frontier.state);
     expect("send#returned_to_sender").to.equal(cantAssetCrawler3.frontier.type);
-    expect(false).to.equal(cantAssetCrawler3.frontier.locked);
+    expect(cantAssetCrawler3.frontier.locked).to.equal(false);
+    expect(cantAssetCrawler3.frontier.nanoBlock.hash).to.equal("1ACDBFDF725D5738CD6B6454464FA1313574C056626ECEFCA8C4B5D564F75338");
   });
 
   it("cancels atomic swap if send#payment sends enough raw to the wrong account", async () => {
@@ -334,6 +343,7 @@ describe('AssetCrawler', function () {
     expect(issuer).to.equal(cantAssetCrawler4.frontier.owner);
     expect("owned").to.equal(cantAssetCrawler4.frontier.state);
     expect("send#returned_to_sender").to.equal(cantAssetCrawler4.frontier.type);
-    expect(false).to.equal(cantAssetCrawler4.frontier.locked);
+    expect(cantAssetCrawler4.frontier.locked).to.equal(false);
+    expect(cantAssetCrawler4.frontier.nanoBlock.hash).to.equal("A5FE789EF4C2E52EEFB31F3356581317FF5D1C8F9DEACDC4AE85EE8AB5D3E56A");
   });
 });

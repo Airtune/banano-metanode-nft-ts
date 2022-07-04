@@ -8,7 +8,8 @@ import { TBlockHash } from '../src/types/banano';
 chai.use(chaiAsPromised);
 const expect = chai.expect;
 
-describe('SupplyBlocksCrawler', () => {
+describe('SupplyBlocksCrawler', function() {
+  this.timeout(10000);
   let supplyBlocksCrawler1sux: SupplyBlocksCrawler;
   let supplyBlocks1sux: INanoBlock[];
   let supplyBlockHashes1sux: TBlockHash[];
