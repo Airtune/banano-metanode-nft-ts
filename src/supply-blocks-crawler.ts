@@ -14,6 +14,8 @@ import { TAccount } from "./types/banano";
 export class SupplyBlocksCrawler {
   private _issuer: string;
   private _nanoNode: NanoNode;
+  public supplyBlocks: INanoBlock[];
+  public metadataRepresentatives: TAccount[];
 
   constructor(nanoNode: NanoNode, issuer: string) {
     this._nanoNode = nanoNode;
@@ -21,27 +23,34 @@ export class SupplyBlocksCrawler {
   }
 
   async crawl(): Promise<INanoBlock[]> {
-    // Initialize crawler that crawls forward from account frontier
-    const banCrawler = new NanoAccountForwardCrawler(this._nanoNode, this._issuer);
-    await banCrawler.initialize();
-    banCrawler.maxRpcIterations = MAX_RPC_ITERATIONS;
+    try {
+      // Initialize crawler that crawls forward from account frontier
+      const banCrawler = new NanoAccountForwardCrawler(this._nanoNode, this._issuer);
+      await banCrawler.initialize();
+      banCrawler.maxRpcIterations = MAX_RPC_ITERATIONS;
 
-    const supplyBlocks: INanoBlock[] = [];
-    let block: INanoBlock = undefined;
-    const metadataRepresentatives: TAccount[] = [];
+      const supplyBlocks: INanoBlock[] = [];
+      let block: INanoBlock = undefined;
+      const metadataRepresentatives: TAccount[] = [];
 
-    // Crawl forward from frontier in issuer account
-    for await (const followedByBlock of banCrawler) {
-      if (this.validateSupplyBlock(block, followedByBlock, metadataRepresentatives)) {
-        supplyBlocks.push(block);
-        metadataRepresentatives.push(followedByBlock.representative as TAccount);
+      // Crawl forward from frontier in issuer account
+      for await (const followedByBlock of banCrawler) {
+        if (this.validateSupplyBlock(block, followedByBlock, metadataRepresentatives)) {
+          supplyBlocks.push(block);
+          metadataRepresentatives.push(followedByBlock.representative as TAccount);
+        }
+
+        // Cache followedByBlock that is ahead of block in next iteration
+        block = followedByBlock;
       }
 
-      // Cache followedByBlock that is ahead of block in next iteration
-      block = followedByBlock;
-    }
+      this.supplyBlocks = supplyBlocks;
+      this.metadataRepresentatives = metadataRepresentatives;
 
-    return supplyBlocks;
+      return supplyBlocks;
+    } catch (error) {
+      throw(error);
+    }
   }
 
   // https://github.com/Airtune/73-meta-tokens/blob/main/meta_ledger_protocol/supply_block.md#validation

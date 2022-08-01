@@ -18,7 +18,7 @@
     "@bananocoin/bananojs": "^2.4.26",
     "async-mutex": "^0.3.2",
     "express": "^4.18.1",
-    "nano-account-crawler": "git+https://github.com/Airtune/nano-account-crawler.git",
+    "nano-account-crawler": "github:Airtune/nano-account-crawler",
     "nano-ipfs": "git+https://github.com/Airtune/nano-ipfs.git",
     "node-fetch": "^2.6.1",
     "pure-ipfs-only-hash": "^4.0.2"
